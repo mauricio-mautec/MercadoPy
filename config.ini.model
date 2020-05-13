@@ -1,0 +1,24 @@
+[TOKEN]
+hugekey=R7J0tiuj987nbakki35e6ydjkkkoiaood9cWtkQPQNU0LeyVAFA082kCVR7KzHr
+timekey=38EC6594A7955E575C5FCC165F0D1586B0F9A76B09C09DF9006782E4D2B58188
+maxage=20
+# seconds
+
+[DATABASE]
+database_DB=api.accessDB.postgres_DB
+
+[SQLITE3]
+database=/srv/mautec/www/mercado/data/API.db
+
+[FIREBIRD3]
+database=192.168.0.2:/srv/mautec/mercado/data/API.fdb
+userDB=SYSDBA
+userPW=123456789066553o
+
+[POSTGRES]
+database=dbname='merdadodb' user='postgres' host='192.168.0.2' password='7Rintg7'
+
+[PIKA]
+credentials=pika.PlainCredentials('apiFabrica', '0-KALK7783H278398809009JUbdaa2Ae')
+url=amqp://nsffaaaf:54899099qnoY9Zv-6j3235UffsTSc2Ae@bee.rmq.cloudamqp.com/nsffaaaf
+exchange='MercadoServiceAPI'
