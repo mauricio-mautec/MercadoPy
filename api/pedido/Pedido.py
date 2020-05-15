@@ -39,7 +39,6 @@ class NovoPedido:
 
         # 3 CRIA O PEDIDO
         client = 1
-        forma_pagamento = 'CARTAO CREDIDO'
         if not pedido.novo(client):
             data["Result"] = 'PROBLEMA NOVO PEDIDO'
             data["Error"]  = pedido.Error

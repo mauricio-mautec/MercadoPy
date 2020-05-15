@@ -15,22 +15,15 @@ def Log(message):
 def Api(ch, method, properties, data):
     npid = os.fork()
     if npid != 0:
-        info = f"Processing Client {npid}"
-        print(info)
-        Log(info)
         return
 
-
-    # CLEAN DATA
-    data = data.strip()
-    data = data.decode('UTF-8')
-    if len(data) == 0:
+    if len(data.strip()) == 0:
         Log("NO JSON")
         sys.exit(0)
-              
-    dataCls = unicodedata.normalize('NFD', data)
-    result  = dataCls.encode('ascii', 'ignore').decode('ascii')
-  
+
+    # CLEAN DATA
+    result  = cleanData(data)
+
     # CHECK API FORMAT
     data, checked = checkedApiJSON(result)
     if not checked:
@@ -121,7 +114,7 @@ def checkedApiJSON(result):
 
 
 connectURL   = konstantes('PIKA', 'url')
-exchange     = konstantes('PIKA', 'exchange')
+exchange     = konstantes('PIKA', 'exchange_direct')
 queue        = konstantes('PIKA', 'queue')
 parametros   = pika.URLParameters(connectURL)
 connect      = pika.BlockingConnection(parametros)

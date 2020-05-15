@@ -28,7 +28,6 @@ class EventoDTO():
         return strcol[0:-1]
 
     def __setData (self, datum, value):
-        print(datum, value)
         if datum in list(self.__Data.keys()):
             self.__Data[datum] = value
 

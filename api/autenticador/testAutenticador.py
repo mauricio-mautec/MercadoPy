@@ -46,7 +46,6 @@ class TestClient():
         self.channel.queue_declare    (queue = self.clientQueue)
         self.channel.queue_bind       (exchange = self.exchange, queue = self.clientQueue)
         self.channel.basic_consume(self.clientQueue, on_message_callback=callBackFunc, auto_ack=True, exclusive=True)
-        print(f'[*] Waiting for messages from {self.clientQueue}')
         self.channel.start_consuming()
 
     def sendMessageToQueue (self, queue):    
@@ -70,43 +69,44 @@ class TestClient():
         self.Auth     = True
 
     def showMessage (self, what):
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(what)
+        sendLog('autenticador.testAutenticador', what)
 
+
+api   = 'autenticador.testAutenticador'
+sendLog(api, "INICIO TESTE")
 queue = konstantes('PIKA', 'queue')
-
 # ENVIO DO LOGIN/PASSWORD E RECOLHA DO TOKEN PARA FUTUROS ACESSOS E CONFIGURACAO CANAL RSP
 Appid   = {"Name" : "hudflutter", "Version" : "text da versao", "Appsys": "win64, android, iphone" }
 Param   = {"Login": "sergio.moreira@gmail.com","Password": "veiM4biu","Sistema" : 2, "Appid": Appid }
 Api     = {"Name": "autenticador.Token", "Param": Param}
 tC = TestClient() 
 tC.Message["Api"] =  Api
-print("MENSAGEM DE LOGIN:")
+sendLog(api,"MENSAGEM DE LOGIN:")
 tC.sendMessageToQueue(queue);
 tC.startConsuming(tC.getMessage)
 tC.showMessage(tC.Result)
 if 'Token' in tC.Result.keys():
     tC.setAuthorizationWith(tC.Result['Token'], tC.Result['Validade'])
 else:
-    print("TOKEN NAO RECEBIDO")
+    sendLog(api,"TOKEN NAO RECEBIDO")
     sys.exit(0)
 
 # TESTE DO ENVIO DO TOKEN PARA VALIDACAO
 Api     = {"Name": "autenticador.TokenValidate"}
 tC.Message["Api"] =  Api
-print(f"\n\nMENSAGEM ENVIADA AUTORIZACAO VALIDA:")
+sendLog(api,"AUTORIZACAO VALIDA:")
 tC.sendMessageToQueue(queue);
 tC.startConsuming(tC.getMessage)
 tC.showMessage(tC.Result)
 
-sys.exit(0)
-
 # TESTE DO ENVIO DO TOKEN PARA VALIDACAO TOKEN EXPIRADO
 import time
-time.sleep(20)
+maxage = int(konstantes('TOKEN', 'maxage'))
+sendLog(api,f"MENSAGEM AUTORIZACAO TOKEN EXPIRADO EM {maxage}s")
+time.sleep(maxage)
+
 Api     = {"Name": "autenticador.TokenValidate"}
 tC.Message["Api"] =  Api
-print(f"\n\nMENSAGEM ENVIADA AUTORIZACAO TOKEN EXPIRADO:")
 tC.sendMessageToQueue(queue);
 tC.startConsuming(tC.getMessage)
 tC.showMessage(tC.Result)
