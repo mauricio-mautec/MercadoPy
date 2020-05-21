@@ -14,7 +14,9 @@ class PedidoDTO():
     def __init__(self):
         self.__resetData()
         self.__DataList = []
-        self.db    = banco.AccessDB()
+        self.db     = banco.AccessDB()
+        self.item   = ItemDTO()
+        self.evento = EventoDTO()
 
     def __resetData (self):
         # DADOS EXPOSTOS DTO
@@ -30,10 +32,8 @@ class PedidoDTO():
             'Total'              : 0.00,
             'Entregador'         : 0,
             'Concluido'          : False,
-            'Observacao_Entrega' : '',
-            'ItemList'           : [],
-            'EventoList'         : [] }
-         
+            'Observacao_Entrega' : '' }
+
     def __columns (self):
         strcol = ' '
         for col in self.__Data.keys():
@@ -66,6 +66,24 @@ class PedidoDTO():
     def getDataList (self):
         return self.__DataList
 
+    # METODOS PARA TABELAS AUXILIARES
+    def getItemDataField (self, datum):
+        return self.item.getDataField(datum)
+
+    def getItemData (self):
+        return self.item.getData()
+
+    def getItemDataList (self):
+        return self.item.getDataList()
+    
+    def getEventoDataField (self, datum):
+        return self.evento.getDataField(datum)
+
+    def getEventoData (self):
+        return self.evento.getData()
+
+    def getEventoDataList (self):
+        return self.evento.getDataList()
 
 # METODOS ESPECIFICOS
 # CRIAR NOVO PEDIDO PARA O CLIENTE
@@ -88,50 +106,37 @@ class PedidoDTO():
 # CARREGA ITEMS DO PEDIDO
 
     def carregaEvento(self):
-        dto = EventoDTO()
-        if not dto.lista(self.__Data('id')):
+        if not self.evento.lista(self.__Data('id')):
             return False
-        
-        self.__setData('EventoList', dto.getDataList())
         return True
 
     def carregaItem(self):
-        dto = ItemDTO()
-        if not dto.lista(self.__Data('id')):
+        if not self.item.lista(self.__Data('id')):
             return False
-
-        self.__setData('ItemList', dto.getDataList())
         return True
 
     def enviaProducao (self):
-        dto = EventoDTO()
-        if not dto.novo("ENVIADO PRODUCAO", self.__Data('id')):
+        if not self.evento.novo("ENVIADO PRODUCAO", self.__Data('id')):
             return False
         return True
 
     def emProducao (self):
-        dto = EventoDTO()
-        if not dto.novo("EM PRODUCAO", self.__Data('id')):
+        if not self.evento.novo("EM PRODUCAO", self.__Data('id')):
             return False
         return True
 
-
     def finalizaProducao (self):
-        dto = EventoDTO()
-        if not dto.novo("FINALIZADO PRODUCAO", self.__Data('id')):
+        if not self.evento.novo("FINALIZADO PRODUCAO", self.__Data('id')):
             return False
-
         return True
 
     def enviaEntrega (self):
-        dto = EventoDTO()
-        if not dto.novo("ENVIADO ENTREGA", self.__Data('id')):
+        if not self.evento.novo("ENVIADO ENTREGA", self.__Data('id')):
             return False
         return True
 
     def finalizaEntrega (self):
-        dto = EventoDTO()
-        if not dto.novo("FINALIZA ENTREGA", self.__Data('id')):
+        if not self.evento.novo("FINALIZA ENTREGA", self.__Data('id')):
             return False
         return True
 
@@ -142,8 +147,7 @@ class PedidoDTO():
             self.Error = Dados['Error']
             return False
 
-        dto = EventoDTO()
-        if not dto.novo("PEDIDO CONCLUIDO", self.__Data('id')):
+        if not self.evento.novo("PEDIDO CONCLUIDO", self.__Data('id')):
             return False
         return True
 
@@ -162,12 +166,10 @@ class PedidoDTO():
             self.__setData(dtfield, Dados['Data'][column])
             column += 1
 
-        dto = EventoDTO()
-        if not dto.novo("ACRESCENTADO ENTREGADOR", self.__Data('id')):
+        if not self.evento.novo("ACRESCENTADO ENTREGADOR", self.__Data('id')):
             return False
 
         return True
-
 
     def novo (self, cliente):
         stmt = 'insert into pedido (cliente) values (%s) returning id'
@@ -178,8 +180,7 @@ class PedidoDTO():
         
         self.__setData('id', Dados['Data'][0])
 
-        dto = EventoDTO()
-        if not dto.novo("PEDIDO ACEITO", self.__Data['id']):
+        if not self.evento.novo("PEDIDO ACEITO", self.__Data['id']):
             self.Error = dto.Error
             return False
 
@@ -206,8 +207,7 @@ class PedidoDTO():
             self.__setData(dtfield, Dados['Data'][column])
             column += 1
 
-        dto = EventoDTO()
-        if not dto.novo("ACRESCENTADO DESCONTO", self.__Data('id')):
+        if not self.evento.novo("ACRESCENTADO DESCONTO", self.__Data('id')):
             return False
 
         return True
@@ -224,8 +224,7 @@ class PedidoDTO():
             self.__setData(dtfield, Dados['Data'][column])
             column += 1
         
-        dto = EventoDTO()
-        if not dto.novo("ACRESCENTADO VALOR ENTREGA", self.__Data('id')):
+        if not self.evento.novo("ACRESCENTADO VALOR ENTREGA", self.__Data('id')):
             return False
 
         return True
@@ -242,8 +241,7 @@ class PedidoDTO():
             self.__setData(dtfield, Dados['Data'][column])
             column += 1
         
-        dto = EventoDTO()
-        if not dto.novo("ACRESCENTADO OBSERVACAO ENTREGA", self.__Data('id')):
+        if not self.evento.novo("ACRESCENTADO OBSERVACAO ENTREGA", self.__Data('id')):
             return False
 
         return True

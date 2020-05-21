@@ -6,8 +6,11 @@ import json
 import importlib
 from   importlib import util
 import unicodedata
-import sys, os
+import sys, os, signal
 from   utility import *
+
+def handleSIGCHLD(param1, param2):
+    os.waitpid(-1, os.WNOHANG)
 
 def Log(message):
     sendLog('ServiceApi', message)
@@ -52,7 +55,7 @@ def Api(ch, method, properties, data):
         sys.exit(0)
 
     # EXECUTE METHOD EXECUTE
-    message = (f"Served {ApiReq[1]}")
+    message = (f"{modName} {clsName}")
     Log(message)
     result  = modInst.Execute()                            # Metodo comum a todas as classes analisa JSON e processa
     
@@ -112,7 +115,7 @@ def checkedApiJSON(result):
 
     return (data, True)
 
-
+signal.signal(signal.SIGCHLD, handleSIGCHLD)
 connectURL   = konstantes('PIKA', 'url')
 exchange     = konstantes('PIKA', 'exchange_direct')
 queue        = konstantes('PIKA', 'queue')
@@ -127,5 +130,9 @@ channel.basic_consume(queue, on_message_callback=Api, auto_ack=True, exclusive=F
 info = ('[*] Waiting for messages')
 print(info)
 Log(info)
+''' 
+npid = os.fork()
+if npid != 0:
+   sys.exit(0)
+'''
 channel.start_consuming()
-

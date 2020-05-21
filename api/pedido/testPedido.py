@@ -19,43 +19,55 @@ queue = konstantes('PIKA', 'queue')
 Appid   = {"Name" : "Python cmd line", "Version" : "3.6", "Appsys": "Arm Raspbian" }
 Param   = {"Login": "sergio.moreira@gmail.com","Password": "veiM4biu","Sistema" : 2, "Appid": Appid }
 Api     = {"Name": "autenticador.Token", "Param": Param}
-testAPI = TestAPI() 
+testAPI = TestAPI('pedido.testPedido') 
 testAPI.Message["Api"] =  Api
-Log("MENSAGEM DE LOGIN:")
+Log("MENSAGEM DE LOGIN PARA FORNECIMENTO TOKEN COMUNICACAO")
 testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
-testAPI.showMessage(testAPI.Result)
 if 'Token' in testAPI.Result.keys():
     testAPI.setAuthorizationWith(testAPI.Result['Token'], testAPI.Result['Validade'])
 else:
     Log("TOKEN NAO RECEBIDO")
     sys.exit(0)
 
-# TESTE DO ENVIO DO TOKEN PARA VALIDACAO
-Param   = {"Cliente": 1}
+# CRIACAO PEDIDO PROB PARAMETROS 1
+teste = "CRIACAO PEDIDO PROB PARAMETROS 1"
+Param   = {"ClienSte": 1}
 Api     = {"Name": "pedido.NovoPedido", "Param": Param}
 testAPI.Message["Api"] =  Api
-Log("MENSAGEM ENVIADA AUTORIZACAO VALIDA:")
+Log(teste)
 testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
-testAPI.showMessage(testAPI.Result)
+if testAPI.Result['Result'] != "ERROR PARAM NOT FOUND":
+    print(f"FALHA TESTE {teste}")
+    sys.exit(0)
+else:
+    print(f"TESTE {teste}: OK")
 
-sys.exit(0)
-# TESTE DO ENVIO DO TOKEN PARA VALIDACAO TOKEN EXPIRADO
-import time
-#time.sleep(20)
-Param   = {"Cliente": 1}
+# CRIACAO PEDIDO PROB PARAMETROS 2
+teste = "CRIACAO PEDIDO PROB PARAMETROS 2"
+Param   = {"Cliente": 'a1'}
 Api     = {"Name": "pedido.NovoPedido", "Param": Param}
 testAPI.Message["Api"] =  Api
-Log("MENSAGEM ENVIADA AUTORIZACAO TOKEN EXPIRADO:")
+Log(teste)
 testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
-testAPI.showMessage(testAPI.Result)
+if testAPI.Result['Result'] != "ERROR PARAM QUALITY":
+    print(f"FALHA TESTE {teste}")
+    sys.exit(0)
+else:
+    print(f"TESTE {teste}: OK")
 
-# TESTE CRIACAO DE UM NOVO PEDIDO PROB PARAMETROS
-Param   = {"Cliente": 1}
+# CRIACAO PEDIDO PROB PARAMETROS 3
+teste   = "CRIACAO PEDIDO PROB PARAMETROS 3"
+Param   = {"Cliente": -1}
 Api     = {"Name": "pedido.NovoPedido", "Param": Param}
-Log("CRIAR NOVO PEDIDO")
+testAPI.Message["Api"] =  Api
+Log(teste)
 testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
-testAPI.showMessage(testAPI.Result)
+if testAPI.Result['Result'] != "ERROR PARAM VALUE":
+    print(f"FALHA TESTE {teste}")
+    sys.exit(0)
+else:
+    print(f"TESTE {teste}: OK")

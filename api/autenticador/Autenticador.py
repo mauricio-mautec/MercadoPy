@@ -6,10 +6,9 @@ import json
 from api.autenticador.AutenticadorDTO import AutenticadorDTO
 from utility import testToken, konstantes, sendLog
 
-hugekey   = konstantes('TOKEN','hugekey')
-timekey   = konstantes('TOKEN','timekey')
-maxage    = int (konstantes('TOKEN','maxage'))
-
+Hugekey   = konstantes('TOKEN','hugekey')
+Timekey   = konstantes('TOKEN','timekey')
+Maxage    = konstantes('TOKEN','maxage')
 
 # RETORNA CASO LOGIN / PASSWORD CONFERIR
 # JSON COM SISTEMAS QUE PODEM SER ATENDIDOS
@@ -24,17 +23,17 @@ class UserInfo:
 
         if  dto.getUserInfo (Login, Password):
             data = dto.getData()
+            data["Result"] = "OK"
             return json.dumps(data)
             
         data = {}
         data["Api"]    = "autenticador.UserInfo"
-        data["Result"] = f"Login [{Login}] Password [{Password}] NOT OK"
+        data["Result"] = "Login/Password NOT OK"
         self.Log(dados["Result"])
-
         return json.dumps(data)
 
-    def Log(message):
-        sendLog('Autenticador.UserInfo', message)
+    def Log(self, message):
+        sendLog('autenticador.UserInfo', message)
     
 class Token:
     def __init__(self, Param):
@@ -57,40 +56,88 @@ class Token:
             Sessao["UserID"]   = data["UserID"] 
             Sessao["__IP__"]   = self.Param["__IP__"]
             Sessao["key"]      = Token.hex
-            slrz               = Serializer(hugekey)
+            slrz               = Serializer(Hugekey)
             Token              = slrz.dumps(Sessao)
             # TIMESTAMP PARA TEMPO DE VALIDADE
-            st                 = TimestampSigner (timekey)
+            st                 = TimestampSigner (Timekey)
             validade           = st.sign(Sessao["Sistema"]).decode('UTF-8')
             dados              = {}
             dados["Token"]     = Token
             dados["Validade"]  = validade
+            dados["Result"]    = "OK"
             return json.dumps(dados) # PYTHON DATA TO ENCODED JSON STRING
 
         dados = {}
         dados["Api"]    = "autenticador.Token"
-        dados["Result"] = f"Login [{Login}] Password [{Password}] NOT OK"
+        dados["Result"] = "Login/Password NOT OK"
         self.Log(dados["Result"])
-
         return json.dumps(dados)
     
-    def Log(message):
-        sendLog('Autenticador.Token', message)
+    def Log(self, message):
+        sendLog('autenticador.Token', message)
 
 class TokenValidate:
     def __init__(self, Param):
         self.Param  = Param
+        self.dto    = AutenticadorDTO()
+
+    def Log(self,message):
+        sendLog('autenticador.TokenValidade', message)
 
     def Execute (self):
         data = {}
-        data["Api"]    = "autenticador.TokenValidade"
+        api         = "autenticador.TokenValidade"
+        data["Api"] = api
         Result, msg, AuthID = testToken(self.Param)
-        if not Result:
-            data["Result"] = msg
-            sendLog('Autenticador.TokenValidate', msg)
-        else:
+        if Result:
             data["Result"] = "OK"
-            dto = AutenticadorDTO()
-            dto.checkAuth(AuthID)    # UPDATE LAST CHECK TIME OF THE TOKEN
-        
+            self.dto = AutenticadorDTO()
+            self.dto.updateAuth(AuthID,api)    # UPDATE LAST CHECK TIME OF THE TOKEN
+            return json.dumps(data)
+
+        info = json.loads(msg)
+        if info['Result'] != 'EXPIRED':
+            data["Result"] = msg
+            self.Log(msg)
+            return json.dumps(data)
+      
+        # TOKEN EXPIRADO - VERIFICAR POSSIBLIDADE DE REVALIDACAO
+        Result, validade = self.AtualizarToken()
+        if Result:
+            data['Token']    = self.Param['Token']
+            data['Validade'] = validade
+            msg = 'OK'
+        else:
+            self.Log(self.dto.Error)
+            data['Error'] = self.dto.Error
+            msg = 'EMITIR NOVA AUTORIZACAO'
+
+        data['Result'] = msg
         return json.dumps(data)
+
+    def AtualizarToken(self):
+        # RECUPERAR SESSAO
+        Token    = self.Param['Token']
+        slrz     = Serializer(Hugekey)
+        validade = ''
+        try:
+            Sessao = slrz.loads(Token)
+        except:
+            return (False, validade)
+        
+        # VERIFICAR TOKEN NA BASE
+        AuthID = Sessao['AuthID']
+        UserID = Sessao['UserID']
+        maxage = int(Maxage) + 15
+
+        if not self.dto.checkValidAccess(AuthID, UserID, maxage):
+            return (False, validade)
+
+        # ATUALIZAR TOKEN NA BASE
+        if not self.dto.updateAuth(AuthID, 'autenticador.AtualizarToken'):
+            return (False, validade)
+
+        # REVALIDAR TOKEN
+        st        = TimestampSigner (Timekey)
+        validade  = st.sign(Sessao["Sistema"]).decode('UTF-8')
+        return (True, validade)

@@ -103,8 +103,9 @@ class TestAPI():
     Token    = ''
     Validade = '' 
     Message  = {}
-    def __init__(self):
+    def __init__(self, apiname):
         queueid          = uuid.uuid4()
+        self.ApiName     = apiname
         self.clientQueue = queueid.hex
         self.connectURL  = konstantes('PIKA', 'url')
         self.exchange    = konstantes('PIKA', 'exchange_direct')
@@ -136,7 +137,7 @@ class TestAPI():
         self.channel.queue_declare    (queue = self.clientQueue)
         self.channel.queue_bind       (exchange = self.exchange, queue = self.clientQueue)
         self.channel.basic_consume(self.clientQueue, on_message_callback=callBackFunc, auto_ack=True, exclusive=True)
-        print(f'[*] Waiting for messages from {self.clientQueue}')
+        print(f'[{self.clientQueue}]')
         self.channel.start_consuming()
 
     def sendMessageToQueue (self, queue):    
@@ -148,9 +149,13 @@ class TestAPI():
             self.Message['Api']['Param']['Token']    = self.Token   
             self.Message['Api']['Param']['Validade'] = self.Validade   
 
-        self.showMessage(self.Message)
         message = json.dumps(self.Message)
         sendMessage(queue, message)
+
+    def clrAuthorization(self):
+        self.Auth     = False
+        self.Token    = ''
+        self.Validade = ''
 
     def setAuthorizationWith (self, token, validate):
         self.Token    = token
@@ -158,8 +163,7 @@ class TestAPI():
         self.Auth     = True
 
     def showMessage (self, what):
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(what)
+        sendLog(self.ApiName, what)
 
 
 data =  {

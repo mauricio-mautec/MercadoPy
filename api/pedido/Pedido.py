@@ -21,7 +21,7 @@ class NovoPedido:
     def Execute (self):
         pedido       = PedidoDTO()
 
-        # 1 AUTORIZATION
+        # AUTORIZATION
         data = {}
         data["Api"]    = "pedido.NovoPedido"
         if  not self.tokenIsValid():
@@ -29,23 +29,37 @@ class NovoPedido:
             self.Log(data["Result"])
             return json.dumps(data)
 
+        # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         if 'Cliente' not in paramKeys:
-            data["Result"] = "ERROR PARAM"
+            data["Result"] = "ERROR PARAM NOT FOUND"
+            self.Log(data['Result'])
+            return json.dumps(data)
+
+        try: 
+            Cliente = int(self.Param['Cliente'])
+        except:
+            data["Result"] = "ERROR PARAM QUALITY"
+            self.Log(data['Result'])
+            return json.dumps(data)
+            
+        if Cliente <= 0:
+            data["Result"] = "ERROR PARAM VALUE"
             self.Log(data['Result'])
             return json.dumps(data)
 
         # 2 VERIFICA CLIENTE OK
 
         # 3 CRIA O PEDIDO
-        client = 1
+        client = self.Param['Cliente']
         if not pedido.novo(client):
             data["Result"] = 'PROBLEMA NOVO PEDIDO'
             data["Error"]  = pedido.Error
             self.Log(data['Error'])
             return json.dumps(data)
         
-        data["Result"] = "TOKEN OK"
+        pedido = pedido.getDataField('id')
+        data["Result"] = f"NOVO PEDIDO CRIADO: {pedido}"
         self.Log(data['Result'])
         return json.dumps(data)
         
@@ -60,5 +74,5 @@ class NovoPedido:
             return False
         else:
             dto = AutenticadorDTO()
-            dto.checkAuth(AuthID)    # UPDATE LAST CHECK TIME OF THE TOKEN
+            dto.updateAuth(AuthID,'pedido.NovoPedido')    # UPDATE LAST CHECK TIME OF THE TOKEN
             return True 

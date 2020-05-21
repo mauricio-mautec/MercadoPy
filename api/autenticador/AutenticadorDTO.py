@@ -11,6 +11,7 @@ class AutenticadorDTO():
     def __init__(self):
         self.__resetData()
         self.db    = banco.AccessDB()
+        self.Error = ''
 
     def __resetData (self):
         # DADOS EXPOSTOS DTO
@@ -27,7 +28,7 @@ class AutenticadorDTO():
         if datum in list(self.__Data.keys()):
             self.__Data[datum] = value
 
-    def getData (self, datum):
+    def getDataField (self, datum):
         if datum in list(self.__Data.keys()):
             return self.__Data[datum][1]
         else:
@@ -80,20 +81,34 @@ class AutenticadorDTO():
         Dados = self.db.queryOne (stmt, dados)
 
         if not Dados['Result']:
-            self.__Data['Error'] = Dados['Error']
+            self.Error = Dados['Error']
             return False
 
         if Dados['Data']:
-            self.__Data['AuthID'] = Dados['Data'][0]
+            self.__setData('AuthID' , Dados['Data'][0])
 
         return True
 
-    def checkAuth (self, authid):
-        stmt = f'UPDATE acesso set last_check = CURRENT_TIMESTAMP WHERE id = {authid} RETURNING last_check'
-        Dados = self.db.queryOne(stmt, None)
+    def updateAuth (self, authid, last_check_api):
+        stmt = f'UPDATE acesso set last_check = CURRENT_TIMESTAMP, last_check_api = %s WHERE id = {authid} RETURNING last_check'
+        Dados = self.db.queryOne(stmt, (last_check_api,))
         if Dados['Result']:
-            self.__Data['Ultimo_Acesso'] = Dados['Data']
+            self.__setData('Ultimo_Acesso', Dados['Data'])
             return True
         else:
-            self.__Data['Error'] = Dados['Error']
+            self.Error = Dados['Error']
+            return False
+
+# VERIFICA EXISTE UM TOKEN VALIDO COM TEMPO MENOR
+# QUE MAXAGE
+    def checkValidAccess (self, authid, userid, maxage):
+        stmt = "select us.usuario from acesso a join usuario_sistema us on us.id = a.usuario_sistema where a.id = %s and EXTRACT (EPOCH from (current_timestamp - a.last_check)) < %s"
+        Dados = self.db.queryOne(stmt, (authid, maxage))
+        if not Dados['Result']:
+            self.Error = Dados['Error']
+            return False
+        
+        if Dados['Data'] and Dados['Data'][0] == userid:
+            return True
+        else:
             return False
