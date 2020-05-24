@@ -57,10 +57,9 @@ class NovoPedido:
             data["Error"]  = pedido.Error
             self.Log(data['Error'])
             return json.dumps(data)
-        
+       
         pedido = pedido.getDataField('id')
-        data["Result"] = f"NOVO PEDIDO CRIADO: {pedido}"
-        self.Log(data['Result'])
+        data["Result"] = "OK"
         return json.dumps(data)
         
     def Log(self, message):

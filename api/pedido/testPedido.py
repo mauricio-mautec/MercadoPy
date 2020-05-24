@@ -71,3 +71,33 @@ if testAPI.Result['Result'] != "ERROR PARAM VALUE":
     sys.exit(0)
 else:
     print(f"TESTE {teste}: OK")
+
+# CRIACAO PEDIDO PROB PARAMETROS 4
+teste   = "CRIACAO PEDIDO PROB PARAMETROS 4"
+Param   = {"Cliente": 200}
+Api     = {"Name": "pedido.NovoPedido", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if testAPI.Result['Result'] != "PROBLEMA NOVO PEDIDO":
+    print(f"FALHA TESTE {teste}")
+    sys.exit(0)
+else:
+    print(f"TESTE {teste}: OK")
+
+# CRIACAO NOVO PEDIDO
+teste   = "CRIACAO NOVO PEDIDO"
+Param   = {"Cliente": 1}
+Api     = {"Name": "pedido.NovoPedido", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if testAPI.Result['Result'] != "OK":
+    print(f"FALHA TESTE {teste}")
+    import pprint
+    pprint.pprint(testAPI.Result)
+    sys.exit(0)
+else:
+    print(f"TESTE {teste}: OK")

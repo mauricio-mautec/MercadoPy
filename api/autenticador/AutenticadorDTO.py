@@ -30,7 +30,7 @@ class AutenticadorDTO():
 
     def getDataField (self, datum):
         if datum in list(self.__Data.keys()):
-            return self.__Data[datum][1]
+            return self.__Data[datum]
         else:
             return False
 

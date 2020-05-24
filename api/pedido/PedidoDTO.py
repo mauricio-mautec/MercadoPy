@@ -56,7 +56,7 @@ class PedidoDTO():
 
     def getDataField (self, datum):
         if datum in list(self.__Data.keys()):
-            return self.__Data[datum][1]
+            return self.__Data[datum]
         else:
             return False
 
@@ -178,10 +178,10 @@ class PedidoDTO():
             self.Error = Dados['Error']
             return False
         
-        self.__setData('id', Dados['Data'][0])
+        self.__setData('id', Dados['Data'][0][0])
 
         if not self.evento.novo("PEDIDO ACEITO", self.__Data['id']):
-            self.Error = dto.Error
+            self.Error = self.evento.Error
             return False
 
         return True
