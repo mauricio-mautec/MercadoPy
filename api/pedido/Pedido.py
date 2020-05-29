@@ -11,6 +11,19 @@ hugekey   = konstantes('TOKEN','hugekey')
 timekey   = konstantes('TOKEN','timekey')
 maxage    = int (konstantes('TOKEN','maxage'))
 
+def Log(ident, message):
+    sendLog('pedido.NovoPedido', message)
+
+
+def tokenIsValid(ident, param):
+    Result, msg, AuthID = testToken(param)
+    if not Result:
+        Log(msg, ident)
+        return False
+    else:
+        dto = AutenticadorDTO()
+        dto.updateAuth(AuthID, ident)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        return True 
 
 # RETORNA CASO LOGIN / PASSWORD CONFERIR
 # JSON COM SISTEMAS QUE PODEM SER ATENDIDOS
@@ -19,59 +32,46 @@ class NovoPedido:
         self.Param  = Param
 
     def Execute (self):
-        pedido       = PedidoDTO()
+        pedido = PedidoDTO()
+        ident  = "pedido.NovoPedido"
 
         # AUTORIZATION
         data = {}
-        data["Api"]    = "pedido.NovoPedido"
-        if  not self.tokenIsValid():
+        data["Api"] = ident
+        if  not tokenIsValid(ident, self.Param):
             data["Result"] = "TOKEN NOT VALID"
-            self.Log(data["Result"])
+            Log(data["Result"], ident)
             return json.dumps(data)
 
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         if 'Cliente' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
-            self.Log(data['Result'])
+            Log(data['Result'], ident)
             return json.dumps(data)
 
         try: 
             Cliente = int(self.Param['Cliente'])
         except:
             data["Result"] = "ERROR PARAM QUALITY"
-            self.Log(data['Result'])
+            Log(data['Result'], ident)
             return json.dumps(data)
             
         if Cliente <= 0:
             data["Result"] = "ERROR PARAM VALUE"
-            self.Log(data['Result'])
+            Log(data['Result'], ident)
             return json.dumps(data)
 
-        # 2 VERIFICA CLIENTE OK
-
-        # 3 CRIA O PEDIDO
+        # 2 CRIA O PEDIDO
         client = self.Param['Cliente']
         if not pedido.novo(client):
             data["Result"] = 'PROBLEMA NOVO PEDIDO'
             data["Error"]  = pedido.Error
-            self.Log(data['Error'])
+            Log(data['Error'], ident)
             return json.dumps(data)
        
         pedido = pedido.getDataField('id')
+        data["Pedido"] = pedido
         data["Result"] = "OK"
-        return json.dumps(data)
-        
-    def Log(self, message):
-        sendLog('pedido.NovoPedido', message)
-    
 
-    def tokenIsValid(self):
-        Result, msg, AuthID = testToken(self.Param)
-        if not Result:
-            self.Log(msg)
-            return False
-        else:
-            dto = AutenticadorDTO()
-            dto.updateAuth(AuthID,'pedido.NovoPedido')    # UPDATE LAST CHECK TIME OF THE TOKEN
-            return True 
+        return json.dumps(data)

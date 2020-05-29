@@ -68,6 +68,7 @@ class Token:
             return json.dumps(dados) # PYTHON DATA TO ENCODED JSON STRING
 
         dados = {}
+        dados['Error']  = dto.Error
         dados["Api"]    = "autenticador.Token"
         dados["Result"] = "Login/Password NOT OK"
         self.Log(dados["Result"])

@@ -19,7 +19,7 @@ def Log (message):
     sendLog (api, message)
 
 #'LOGIN/PASSWORD COM LOGIN INCORRETO'
-teste = 'LOGIN/PASSWORD COM LOGIN INCORRETO'
+teste = '1 LOGIN/PASSWORD COM LOGIN INCORRETO'
 Appid   = {"Name" : "hudflutter", "Version" : "text da versao", "Appsys": "win64, android, iphone" }
 Param   = {"Login": "sergxio.moreira@gmail.com","Password": "veiM4biu","Sistema" : 2, "Appid": Appid }
 Api     = {"Name": "autenticador.Token", "Param": Param}
@@ -34,7 +34,7 @@ else:
     print(f"TESTE {teste}: OK")
 
 #'LOGIN/PASSWORD COM PASSWORD INCORRETO'
-teste = 'LOGIN/PASSWORD COM PASSWORD INCORRETO'
+teste = '2 LOGIN/PASSWORD COM PASSWORD INCORRETO'
 Appid   = {"Name" : "hudflutter", "Version" : "text da versao", "Appsys": "win64, android, iphone" }
 Param   = {"Login": "sergio.moreira@gmail.com","Password": "VeiM4biu","Sistema" : 2, "Appid": Appid }
 Api     = {"Name": "autenticador.Token", "Param": Param}
@@ -48,7 +48,7 @@ if tC.Result['Result'] != 'Login/Password NOT OK':
 else:
     print(f"TESTE {teste}: OK")
 
-teste = 'LOGIN/PASSWORD RECEBE TOKEN AUTORIZADO'
+teste = '3 LOGIN/PASSWORD RECEBE TOKEN AUTORIZADO'
 Appid   = {"Name" : "hudflutter", "Version" : "text da versao", "Appsys": "win64, android, iphone" }
 Param   = {"Login": "sergio.moreira@gmail.com","Password": "veiM4biu","Sistema" : 2, "Appid": Appid }
 Api     = {"Name": "autenticador.Token", "Param": Param}
@@ -60,6 +60,7 @@ if 'Token' in tC.Result.keys():
     tC.setAuthorizationWith(tC.Result['Token'], tC.Result['Validade'])
 else:
     print (f"FALHA TESTE {teste}: TOKEN NAO RECEBIDO")
+    print(tC.Result)
     sys.exit(0)
 
 if tC.Result['Result'] != 'OK':
@@ -70,7 +71,7 @@ else:
 
 
 #teste = 'ENVIO TOKEN PARA VALIDACAO'
-teste = 'ENVIO TOKEN PARA VALIDACAO'
+teste = '4 ENVIO TOKEN PARA VALIDACAO'
 tC.Message["Api"] = {"Name": "autenticador.TokenValidate"}
 Log(teste)
 tC.sendMessageToQueue(queue);
@@ -86,7 +87,7 @@ else:
 # PARA UM VALOR MENOR QUE 20 SEGUNDOS
 import time
 maxage = int(konstantes('TOKEN', 'maxage'))
-teste  = f"ENVIO TOKEN EXPIRADO {maxage}s"
+teste  = f"5 ENVIO TOKEN EXPIRADO {maxage}s"
 Log(teste)
 if maxage < 20:
     time.sleep(maxage + 20)
@@ -100,7 +101,7 @@ if tC.Result['Result'] != 'EMITIR NOVA AUTORIZACAO':
 else:
     print(f"TESTE {teste}: OK")
 
-teste = 'LOGIN/PASSWORD RECEBE USER INFO'
+teste = '6 LOGIN/PASSWORD RECEBE USER INFO'
 Param   = {"Login": "sergio.moreira@gmail.com","Password": "veiM4biu" }
 Api     = {"Name": "autenticador.UserInfo", "Param": Param}
 tC.Message["Api"] =  Api

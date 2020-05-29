@@ -42,6 +42,7 @@ class AutenticadorDTO():
         stmt = 'SELECT id, nome, email, qtd_acesso, ultimo_acesso FROM usuario WHERE email = %s AND senha = %s'
         Dados = self.db.queryOne(stmt, (Login, Password))
         if not Dados['Result']:
+            self.Error = Dados['Error']
             return False
 
         if Dados['Data'] != None:   
@@ -53,9 +54,10 @@ class AutenticadorDTO():
         else:    
             return False
         
-        stmt = 'SELECT US.id, S.nome, S.url FROM sistema S JOIN usuario_sistema US ON US.sistema = S.id WHERE US.usuario = %s'
+        stmt = 'SELECT US.id, S.nome, S.url FROM loja S JOIN usuario_loja US ON US.loja = S.id WHERE US.usuario = %s'
         Dados = self.db.queryAll(stmt, (self.__Data['UserID'],))
         if not Dados['Result']:
+            self.Error = Dados['Error']
             return False
 
         self.__Data['Sistemas_Atendidos'] = '{}'
@@ -76,7 +78,7 @@ class AutenticadorDTO():
   
         Appids = "{}".format(Appid)
         
-        stmt = 'INSERT INTO acesso(usuario_sistema, token, appid) VALUES  (%s,%s,%s) RETURNING id'
+        stmt = 'INSERT INTO acesso(usuario_loja, token, appid) VALUES  (%s,%s,%s) RETURNING id'
         dados = (Sistema, Token, Appids)
         Dados = self.db.queryOne (stmt, dados)
 
@@ -102,7 +104,7 @@ class AutenticadorDTO():
 # VERIFICA EXISTE UM TOKEN VALIDO COM TEMPO MENOR
 # QUE MAXAGE
     def checkValidAccess (self, authid, userid, maxage):
-        stmt = "select us.usuario from acesso a join usuario_sistema us on us.id = a.usuario_sistema where a.id = %s and EXTRACT (EPOCH from (current_timestamp - a.last_check)) < %s"
+        stmt = "select us.usuario from acesso a join usuario_loja us on us.id = a.usuario_loja where a.id = %s and EXTRACT (EPOCH from (current_timestamp - a.last_check)) < %s"
         Dados = self.db.queryOne(stmt, (authid, maxage))
         if not Dados['Result']:
             self.Error = Dados['Error']
