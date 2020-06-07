@@ -37,14 +37,14 @@ class ItemDTO():
 
         datacol = 0
         for field in self.__Data.keys():        
-            self.__Data[field] = tupleData[datacol]
+            self.__Data[field] = tupleData(datacol)
             datacol += 1
         
         self.__DataList.append(self.__Data)
 
-    def getDataField (self, datum):
+    def getData (self, datum):
         if datum in list(self.__Data.keys()):
-            return self.__Data[datum]
+            return self.__Data[datum][1]
         else:
             return False
 
@@ -72,9 +72,8 @@ class ItemDTO():
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
-
-        pedidoItemID = Dados['Data'][0][0]
-        self.__setData('id', pedidoItemID)
+        
+        self.__setData('id', Dados[0])
 
         return True
 
@@ -100,7 +99,6 @@ class ItemDTO():
             self.__DataList = []
             self.Error = Dados['Error']
             return False
-
         return True        
 
     def limpa (self, pedido):
@@ -110,7 +108,6 @@ class ItemDTO():
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
-
         return True
 
     def lista (self, pedido):
@@ -125,7 +122,4 @@ class ItemDTO():
         for tupleInList in Dados['Data']:
             self.__setDataList(tupleInList)
 
-        return True
-
-    def relacionaItem(self, pedidoItem):
         return True

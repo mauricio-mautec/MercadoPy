@@ -5,7 +5,7 @@ database_DB = konstantes('DATABASE','database_DB')
 banco       = importlib.import_module (database_DB)
 
 # TRABALHA OS ITENS QUE COMPOEM UM PEDIDO DE VENDA
-class ItemDTO():
+class Item_EstoqueDTO():
 # METODOS COMUNS
     def __init__(self):
         self.__resetData()
@@ -17,10 +17,9 @@ class ItemDTO():
         # INFORMACAO QUE O DTO PRECISA TRABALHAR/FORNECER
         self.__Data = {
             'id'             : 0,
-            'Pedido'         : 0,
-            'Artigo'         : '',
-            'Quantidade'     : 0, 
-            'Valor'          : 0.00 }
+            'Pedido_Item'    : 0,
+            'Estoque_Venda'  : 0,
+            'Quantidade'     : 0 } 
 
     def __columns (self):
         strcol = ' '
@@ -37,14 +36,14 @@ class ItemDTO():
 
         datacol = 0
         for field in self.__Data.keys():        
-            self.__Data[field] = tupleData[datacol]
+            self.__Data[field] = tupleData(datacol)
             datacol += 1
         
         self.__DataList.append(self.__Data)
 
-    def getDataField (self, datum):
+    def getData (self, datum):
         if datum in list(self.__Data.keys()):
-            return self.__Data[datum]
+            return self.__Data[datum][1]
         else:
             return False
 
@@ -61,20 +60,18 @@ class ItemDTO():
 # ATUALIZA PEDIDO
 # LISTAR ITENS DO PEDIDO
 
-    def novo (self, pedido, artigo, quantidade, valor):
-        self.__setData('Pedido',        pedido)
-        self.__setData('Artigo',        artigo)
-        self.__setData('Quantidade',    quantidade)
-        self.__setData('Valor',         valor)
+    def novo (self, pedido_item, estoque_venda, quantidade):
+        self.__setData('Pedido_Item',    pedido_item)
+        self.__setData('Estoque_Artigo', artigo)
+        self.__setData('Quantidade',     quantidade)
 
-        stmt = 'insert into pedido_item (pedido, artigo, quantidade, valor) values (%s, %s, %s, %s) returning id'
+        stmt = 'insert into pedido_item_estoque (pedido_item, estoque_venda, quantidade) values (%s, %s, %s) returning id'
         Dados = self.db.execute(stmt, (pedido, artigo, quantidade, valor))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
-
-        pedidoItemID = Dados['Data'][0][0]
-        self.__setData('id', pedidoItemID)
+        
+        self.__setData('id', Dados[0])
 
         return True
 
@@ -100,7 +97,6 @@ class ItemDTO():
             self.__DataList = []
             self.Error = Dados['Error']
             return False
-
         return True        
 
     def limpa (self, pedido):
@@ -110,7 +106,6 @@ class ItemDTO():
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
-
         return True
 
     def lista (self, pedido):
@@ -125,7 +120,4 @@ class ItemDTO():
         for tupleInList in Dados['Data']:
             self.__setDataList(tupleInList)
 
-        return True
-
-    def relacionaItem(self, pedidoItem):
         return True

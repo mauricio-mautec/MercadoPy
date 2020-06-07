@@ -1,7 +1,7 @@
 from   itsdangerous.serializer import Serializer
 from   itsdangerous            import TimestampSigner
 from   itsdangerous.exc        import BadSignature, BadData
-from   api.pedido.PedidoDTO    import PedidoDTO
+from   api.produto.ProdutoDTO  import ProdutoDTO
 from   api.autenticador.AutenticadorDTO import AutenticadorDTO
 from   utility                 import *
 import uuid
@@ -16,7 +16,7 @@ def Log(ident, message):
 
 
 def tokenIsValid(ident, param):
-    Result, msg, AuthID, Sistema = testToken(param)
+    Result, msg, AuthID = testToken(param)
     if not Result:
         Log(msg, ident)
         return False
@@ -27,13 +27,13 @@ def tokenIsValid(ident, param):
 
 # RETORNA CASO LOGIN / PASSWORD CONFERIR
 # JSON COM SISTEMAS QUE PODEM SER ATENDIDOS
-class NovoPedido:
+class NovoProduto:
     def __init__(self, Param):
         self.Param  = Param
 
     def Execute (self):
-        pedido = PedidoDTO()
-        ident  = "pedido.NovoPedido"
+        produto = ProdutoDTO()
+        ident  = "pedido.NovoProduto"
 
         # AUTORIZATION
         data = {}
@@ -43,104 +43,6 @@ class NovoPedido:
             Log(data["Result"], ident)
             return json.dumps(data)
 
-        # VERIFICACAO PARAMETROS
-        paramKeys = self.Param.keys()
-        if 'Cliente' not in paramKeys:
-            data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
-            return json.dumps(data)
-
-        try: 
-            Cliente = int(self.Param['Cliente'])
-        except:
-            data["Result"] = "ERROR PARAM QUALITY"
-            Log(data['Result'], ident)
-            return json.dumps(data)
-            
-        if Cliente <= 0:
-            data["Result"] = "ERROR PARAM VALUE"
-            Log(data['Result'], ident)
-            return json.dumps(data)
-
-        # 2 CRIA O PEDIDO
-        Result, msg, AuthID, Loja = testToken(self.Param)
-        client = self.Param['Cliente']
-        if not pedido.novo(client, Loja):
-            data["Result"] = 'PROBLEMA NOVO PEDIDO'
-            data["Error"]  = pedido.Error
-            Log(data['Error'], ident)
-            return json.dumps(data)
-       
-        pedido = pedido.getDataField('id')
-        data["Pedido"] = pedido
-        data["Result"] = "OK"
-
-        return json.dumps(data)
-
-
-class RemovePedido:
-    def __init__(self, Param):
-        self.Param  = Param
-
-    def Execute (self):
-        pedido = PedidoDTO()
-        ident  = "pedido.RemovePedido"
-
-        # AUTORIZATION
-        data = {}
-        data["Api"] = ident
-        if  not tokenIsValid(ident, self.Param):
-            data["Result"] = "TOKEN NOT VALID"
-            Log(data["Result"], ident)
-            return json.dumps(data)
-
-        # VERIFICACAO PARAMETROS
-        paramKeys = self.Param.keys()
-        if 'Pedido' not in paramKeys:
-            data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
-            return json.dumps(data)
-
-        try: 
-            Pedido = int(self.Param['Pedido'])
-        except:
-            data["Result"] = "ERROR PARAM QUALITY"
-            Log(data['Result'], ident)
-            return json.dumps(data)
-            
-        if Pedido <= 0:
-            data["Result"] = "ERROR PARAM VALUE"
-            Log(data['Result'], ident)
-            return json.dumps(data)
-
-        # 2 REMOVE O PEDIDO
-        if not pedido.remove(Pedido):
-            data["Result"] = 'PROBLEMA REMOVE PEDIDO'
-            data["Error"]  = pedido.Error
-            Log(data['Error'], ident)
-            return json.dumps(data)
-       
-        data["Result"] = "OK"
-
-        return json.dumps(data)
-
-class NovoItemPedido:
-    def __init__(self, Param):
-        self.Param  = Param
-
-    def Execute (self):
-        ident  = "pedido.NovoItemPedido"
-        pedido = PedidoDTO()
-
-        # AUTORIZATION
-        data = {}
-        data["Api"] = ident
-        if  not tokenIsValid(ident, self.Param):
-            data["Result"] = "TOKEN NOT VALID"
-            Log(data["Result"], ident)
-            return json.dumps(data)
-
-        
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         if 'Artigo' not in paramKeys:
@@ -148,20 +50,109 @@ class NovoItemPedido:
             Log(data['Result'], ident)
             return json.dumps(data)
 
-        if 'Pedido' not in paramKeys:
-            data["Result"] = "ERROR PARAM NOT FOUND"
+        try: 
+            Artigo = int(self.Param['Artigo'])
+        except:
+            data["Result"] = "ERROR PARAM QUALITY"
+            Log(data['Result'], ident)
+            return json.dumps(data)
+            
+        if Artigo <= 0:
+            data["Result"] = "ERROR PARAM VALUE"
             Log(data['Result'], ident)
             return json.dumps(data)
 
-        if 'Quantidade' not in paramKeys:
+        # 2 CRIA O PRODUTO
+        if not produto.novo(Artigo):
+            data["Result"] = 'PROBLEMA NOVO PEDIDO'
+            data["Error"]  = pedido.Error
+            Log(data['Error'], ident)
+            return json.dumps(data)
+       
+        produto = pedido.getDataField('id')
+        data["Produto"] = produto
+        data["Result"]  = "OK"
+
+        return json.dumps(data)
+
+
+class RemoveProduto:
+    def __init__(self, Param):
+        self.Param  = Param
+
+    def Execute (self):
+        produto = ProdutoDTO()
+        ident  = "pedido.RemoveProduto"
+
+        # AUTORIZATION
+        data = {}
+        data["Api"] = ident
+        if  not tokenIsValid(ident, self.Param):
+            data["Result"] = "TOKEN NOT VALID"
+            Log(data["Result"], ident)
+            return json.dumps(data)
+
+        # VERIFICACAO PARAMETROS
+        paramKeys = self.Param.keys()
+        if 'Produto' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
             Log(data['Result'], ident)
             return json.dumps(data)
 
         try: 
-            Artigo = int(self.Param['Artigo'])
-            Pedido = int(self.Param['Pedido'])
-            Qtd    = int(self.Param['Quantidade'])
+            Produto = int(self.Param['Produto'])
+        except:
+            data["Result"] = "ERROR PARAM QUALITY"
+            Log(data['Result'], ident)
+            return json.dumps(data)
+            
+        if Produto <= 0:
+            data["Result"] = "ERROR PARAM VALUE"
+            Log(data['Result'], ident)
+            return json.dumps(data)
+
+        # 2 REMOVE O PRODUTO
+        if not produto.remove(Produto):
+            data["Result"] = 'PROBLEMA REMOVE PEDIDO'
+            data["Error"]  = produto.Error
+            Log(data['Error'], ident)
+            return json.dumps(data)
+       
+        data["Result"] = "OK"
+
+        return json.dumps(data)
+
+class NovoItemProduto:
+    def __init__(self, Param):
+        self.Param  = Param
+
+    def Execute (self):
+        ident  = "produto.NovoItemProduto"
+        produto = ProdutoDTO()
+
+        # AUTORIZATION
+        data = {}
+        data["Api"] = ident
+        if  not tokenIsValid(ident, self.Param):
+            data["Result"] = "TOKEN NOT VALID"
+            Log(data["Result"], ident)
+            return json.dumps(data)
+
+        # VERIFICACAO PARAMETROS
+        paramKeys  = self.Param.keys()
+        parametros = ('Artigo','Produto','Quantidade','Essencial', 'Visivel')
+        for param in parametros:
+            if param not in paramKeys:
+                data["Result"] = "ERROR PARAM NOT FOUND"
+                Log(data['Result'], ident)
+                return json.dumps(data)
+
+        try: 
+            Artigo     = int(self.Param['Artigo'])
+            Produto    = int(self.Param['Pedido'])
+            Quantidade = int(self.Param['Quantidade'])
+            Essencial  = bool(self.Param['Essencial'])
+            Visivel    = bool(self.Param['Visivel'])
 
         except:
             data["Result"] = "ERROR PARAM QUALITY"

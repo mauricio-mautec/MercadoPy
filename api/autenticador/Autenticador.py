@@ -51,7 +51,7 @@ class Token:
             # TOKEN ASSINADO COM VALORES DE SESSAO
             data = dto.getData()
             Sessao = {}
-            Sessao["Sistema"]  = f"Sistema id:{Sistema}"
+            Sessao["Sistema"]  = f"{Sistema}"
             Sessao["AuthID"]   = data["AuthID"]
             Sessao["UserID"]   = data["UserID"] 
             Sessao["__IP__"]   = self.Param["__IP__"]

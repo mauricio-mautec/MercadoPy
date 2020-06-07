@@ -161,9 +161,31 @@ art_2 = pyobj['id']
 pyobj = ArtigoList[2]
 art_3 = pyobj['id']
 
-# INSERIR UM ITEM PRESENTE NO ESTOQUE_VENDA
-teste   = "INSERIR UM ITEM PRESENTE NO ESTOQUE_VENDA"
+# INSERIR UM ITEM DOS TRES PRIMEIROS ARTIGOS
+teste   = "INSERIR UM ITEM DOS TRES PRIMEIROS ARTIGOS"
 Param   = {"Pedido" : Pedido, "Artigo": art_1, "Quantidade": 1}
+Api     = {"Name": "pedido.NovoItemPedido", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if testAPI.Result['Result'] != "OK":
+    print(f"FALHA TESTE {teste}")
+    pp.pprint(testAPI.Result)
+    sys.exit(0)
+
+Param   = {"Pedido" : Pedido, "Artigo": art_2, "Quantidade": 1}
+Api     = {"Name": "pedido.NovoItemPedido", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if testAPI.Result['Result'] != "OK":
+    print(f"FALHA TESTE {teste}")
+    pp.pprint(testAPI.Result)
+    sys.exit(0)
+
+Param   = {"Pedido" : Pedido, "Artigo": art_3, "Quantidade": 1}
 Api     = {"Name": "pedido.NovoItemPedido", "Param": Param}
 testAPI.Message["Api"] =  Api
 Log(teste)
@@ -176,34 +198,3 @@ if testAPI.Result['Result'] != "OK":
 else:
     print(f"TESTE {teste}: OK")
 
-# INSERIR UM ITEM AUSENTE NO ESTOQUE_VENDA
-teste   = "INSERIR UM ITEM AUSENTE NO ESTOQUE_VENDA"
-Param   = {"Pedido" : Pedido, "Artigo": art_2, "Quantidade": 1}
-Api     = {"Name": "pedido.NovoItemPedido", "Param": Param}
-testAPI.Message["Api"] =  Api
-Log(teste)
-testAPI.sendMessageToQueue(queue);
-testAPI.startConsuming(testAPI.getMessage)
-if testAPI.Result['Result'] != "PROBLEMA NOVO ITEM PEDIDO":
-    print(f"FALHA TESTE {teste}")
-    pp.pprint(testAPI.Result)
-    sys.exit(0)
-else:
-    print(f"TESTE {teste}: OK")
-    Log(testAPI.Result)
-
-# INSERIR UM ITEM AUSENTE NO ESTOQUE_VENDA
-teste   = "INSERIR UM ITEM EM QTD A MENOR NO ESTOQUE_VENDA"
-Param   = {"Pedido" : Pedido, "Artigo": art_3, "Quantidade": 3}
-Api     = {"Name": "pedido.NovoItemPedido", "Param": Param}
-testAPI.Message["Api"] =  Api
-Log(teste)
-testAPI.sendMessageToQueue(queue);
-testAPI.startConsuming(testAPI.getMessage)
-if testAPI.Result['Result'] != "PROBLEMA NOVO ITEM PEDIDO":
-    print(f"FALHA TESTE {teste}")
-    pp.pprint(testAPI.Result)
-    sys.exit(0)
-else:
-    print(f"TESTE {teste}: OK")
-    Log(testAPI.Result)

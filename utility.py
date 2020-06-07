@@ -96,7 +96,7 @@ def testToken(Param):
         msgError = '{"Api":"utility.testToken", "Result":"BAD IP"}'
         return (False, msgError, 0)
 
-    return (True, '{"Api":"utility.testToken", "Result":"OK"}', Token['AuthID'])
+    return (True, '{"Api":"utility.testToken", "Result":"OK"}', Token['AuthID'], Token['Sistema'])
 
 class TestAPI():
     Auth     = False    
@@ -132,7 +132,7 @@ class TestAPI():
 
     def startConsuming (self, callBackFunc):    
         self.connect = pika.BlockingConnection(self.parametros)
-        self.channel      = self.connect.channel()
+        self.channel = self.connect.channel()
         self.channel.exchange_declare (exchange = self.exchange, exchange_type = 'direct')
         self.channel.queue_declare    (queue = self.clientQueue)
         self.channel.queue_bind       (exchange = self.exchange, queue = self.clientQueue)
