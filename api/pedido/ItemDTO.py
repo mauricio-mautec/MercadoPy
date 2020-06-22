@@ -127,5 +127,3 @@ class ItemDTO():
 
         return True
 
-    def relacionaItem(self, pedidoItem):
-        return True

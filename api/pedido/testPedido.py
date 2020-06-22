@@ -27,6 +27,7 @@ testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
 if 'Token' in testAPI.Result.keys():
     testAPI.setAuthorizationWith(testAPI.Result['Token'], testAPI.Result['Validade'])
+    print(testAPI.Result['Token'], testAPI.Result['Validade'])
 else:
     Log("TOKEN NAO RECEBIDO")
     sys.exit(0)
@@ -83,6 +84,7 @@ testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
 if testAPI.Result['Result'] != "PROBLEMA NOVO PEDIDO":
     print(f"FALHA TESTE {teste}")
+    print(testAPI.Result)
     sys.exit(0)
 else:
     print(f"TESTE {teste}: OK")
@@ -201,6 +203,22 @@ Log(teste)
 testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
 if testAPI.Result['Result'] != "PROBLEMA NOVO ITEM PEDIDO":
+    print(f"FALHA TESTE {teste}")
+    pp.pprint(testAPI.Result)
+    sys.exit(0)
+else:
+    print(f"TESTE {teste}: OK")
+    Log(testAPI.Result)
+
+# INSERIR UM ITEM COMPOSTO (VENDA PRODUTO) PRESENTE NO ESTOQUE_VENDA
+teste   =  "INSERIR UM ITEM COMPOSTO (VENDA PRODUTO) PRESENTE NO ESTOQUE_VENDA"
+Param   = {"Pedido" : Pedido, "Artigo": 62, "Quantidade": 1}
+Api     = {"Name": "pedido.NovoItemPedido", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if testAPI.Result['Result'] != "OK":
     print(f"FALHA TESTE {teste}")
     pp.pprint(testAPI.Result)
     sys.exit(0)

@@ -6,8 +6,10 @@ banco       = importlib.import_module (database_DB)
 
 # TRABALHA OS ITENS QUE COMPOEM UM PEDIDO DE VENDA
 from api.pedido.ItemDTO           import ItemDTO
+from api.pedido.Item_EstoqueDTO   import Item_EstoqueDTO
 from api.pedido.EventoDTO         import EventoDTO
-from api.pedido.ArtigoDTO         import ArtigoDTO
+from api.artigo.ArtigoDTO         import ArtigoDTO
+from api.produto.ProdutoDTO       import ProdutoDTO
 
 class PedidoDTO():
 # METODOS COMUNS
@@ -15,10 +17,11 @@ class PedidoDTO():
     def __init__(self):
         self.__resetData()
         self.__DataList = []
-        self.db     = banco.AccessDB()
-        self.item   = ItemDTO()
-        self.evento = EventoDTO()
-        self.artigo = ArtigoDTO()
+        self.db           = banco.AccessDB()
+        self.item         = ItemDTO()
+        self.item_estoque = Item_EstoqueDTO()
+        self.evento       = EventoDTO()
+        self.artigo       = ArtigoDTO()
 
     def __resetData (self):
         # DADOS EXPOSTOS DTO
@@ -99,6 +102,16 @@ class PedidoDTO():
 
     def getArtigoDataList (self):
         return self.artigo.getDataList()
+
+#   
+    def getItemEstoqueDataField (self, datum):
+        return self.item_estoque.getDataField(datum)
+
+    def getItemEstoqueData (self):
+        return self.item_estoque.getData()
+
+    def getItemEstoqueDataList (self):
+        return self.item_estoque.getDataList()
 
 # METODOS ESPECIFICOS
 # CRIAR NOVO PEDIDO PARA O CLIENTE - PEDIDO INICIO
@@ -285,9 +298,13 @@ class PedidoDTO():
             self.Error = "Artigo sem Funcao"
             return False
         
+        Loja  = self.getDataField('Loja')
+        Valor = float(self.artigo.getDataField('Valor_Venda'))
+        if Valor <= 0:
+            self.Error = "Artigo Sem Valor de Venda"
+            return False
         
         if funcao == 'VENDA':
-            Loja = self.getDataField('Loja')
             disponivel, qtd = self.artigo.disponivelEstoque(Loja, Artigo)
 
             if not disponivel:
@@ -299,6 +316,45 @@ class PedidoDTO():
                 self.Error = f"Loja {Loja} Artigo {Artigo} Qtd {qtd} Insuficiente"
                 return False
 
+                
+            if not self.item.novo(Pedido, Artigo, Quantidade, Valor):
+                self.Error = self.item.Error
+                return False
+            
+            pedidoItem = self.item.getDataField('id')
+            if not self.item_estoque.novo(pedidoItem, Artigo, Quantidade):
+                self.Error = self.item_estoque.Error
+                return False
+
+            return True
+
+        if funcao == 'VENDA PRODUTO':
+            produto = ProdutoDTO()
+            if not produto.mostraArtigo (Artigo):
+                self.Error = produto.Error
+                return False
+
+            if not self.item.novo(Pedido, Artigo, Quantidade, Valor):
+                return False
+            
+            pedidoItem     = self.item.getDataField('id')
+            produtoArtigos = produto.getProdutoArtigoDataList()
+
+            for produtoArtigo in produtoArtigos:
+                disponivel, qtd = self.artigo.disponivelEstoque(Loja, produtoArtigo['Artigo'])
+                if not disponivel or qtd < produtoArtigo['Quantidade']:
+                    self.Error = "Estoque Venda Sem Artigo"
+                    self.item.remove (Pedido, pedidoItem)
+                    return False
+
+                if not self.item_estoque.novo(pedidoItem, produtoArtigo['Artigo'], produtoArtigo['Quantidade']):
+                    self.Error = self.item_estoque.Error
+                    self.item.remove (Pedido, pedidoItem)
+                    return False
+
+                
+
+            '''    
             Valor = float(self.artigo.getDataField('Valor_Venda'))
             if Valor <= 0:
                 self.Error = "Artigo Sem Valor de Venda"
@@ -306,25 +362,23 @@ class PedidoDTO():
                 
             if not self.item.novo(Pedido, Artigo, Quantidade, Valor):
                 return False
-            
+           
             pedidoItem = self.item.getDataField('id')
-            if not self.item.relacionaItem(pedidoItem):
-                self.Error = self.item.Error
-                return False
-
+            stmt = "select artigo from produto_artigo where produt "
+            '''
             return True
+            
 
         # teste para o caso de produtos funcao VENDA PRODUTO
 
         return True
-
+# PEDIDO_ITEM_ESTOQUE RELACIONA OS ITENS NECESSARIOS ATE O MOMENTO DO ACEITE DO PEDIDO
 # KEEP IT SIMPLE        
-        # 1 - Carregar o Pedido, Artigo
-        # 2 - Identificar o tipo do Artigo
-        # 3 - Relacionar novos itens
-        # 4 - Verificar disponibilidade dos novos itens no estoque_venda
-        # 4 - Criar novo Item para o Pedido em pedido_item
-        # 5 - Criar itens relacionados em pedido_item_estoque
+        #  Carregar o Pedido, Artigo
+        #  Identificar o tipo do Artigo
+        #  Verificar disponibilidade dos novos itens no estoque_venda
+        #  Criar novo Item para o Pedido em pedido_item
+        #  Criar itens relacionados em pedido_item_estoque
 
 # SHOW METHODS
 ###############################################################################

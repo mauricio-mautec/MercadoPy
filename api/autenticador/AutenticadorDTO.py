@@ -105,11 +105,12 @@ class AutenticadorDTO():
 # QUE MAXAGE
     def checkValidAccess (self, authid, userid, maxage):
         stmt = "select us.usuario from acesso a join usuario_loja us on us.id = a.usuario_loja where a.id = %s and EXTRACT (EPOCH from (current_timestamp - a.last_check)) < %s"
+        
         Dados = self.db.queryOne(stmt, (authid, maxage))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
-        
+
         if Dados['Data'] and Dados['Data'][0] == userid:
             return True
         else:

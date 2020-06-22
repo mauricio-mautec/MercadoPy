@@ -5,16 +5,16 @@ database_DB = konstantes('DATABASE','database_DB')
 banco       = importlib.import_module (database_DB)
 
 # TRABALHA OS ITENS QUE COMPOEM UM PRODUTO
-from api.produto.ItemDTO   import ItemDTO
+from api.produto.Produto_ArtigoDTO   import Produto_ArtigoDTO
 
 class ProdutoDTO():
 # METODOS COMUNS
 
     def __init__(self):
         self.__resetData()
-        self.__DataList = []
-        self.db     = banco.AccessDB()
-        self.item   = ItemDTO()
+        self.__DataList     = []
+        self.db             = banco.AccessDB()
+        self.artigo = Produto_ArtigoDTO()
 
     def __resetData (self):
         # DADOS EXPOSTOS DTO
@@ -25,6 +25,7 @@ class ProdutoDTO():
             'Custo_Final'          : 0.00, 
             'Tempo_Medio_Producao' : 0,
             'Preco_Final'          : 0.00,
+            'Image'                : '',
             'Ativo'                : True }
 
     def __columns (self):
@@ -45,7 +46,7 @@ class ProdutoDTO():
 
         datacol = 0
         for field in self.__Data.keys():        
-            self.__Data[field] = tupleData(datacol)
+            self.__Data[field] = tupleData[datacol]
             datacol += 1
         
         self.__DataList.append(self.__Data)
@@ -63,14 +64,14 @@ class ProdutoDTO():
         return self.__DataList
 
     # METODOS PARA TABELAS AUXILIARES
-    def getItemDataField (self, datum):
-        return self.item.getDataField(datum)
+    def getProdutoArtigoDataField (self, datum):
+        return self.artigo.getDataField(datum)
 
-    def getItemData (self):
-        return self.item.getData()
+    def getProdutoArtigoData (self):
+        return self.artigo.getData()
 
-    def getItemDataList (self):
-        return self.item.getDataList()
+    def getProdutoArtigoDataList (self):
+        return self.artigo.getDataList()
 
 # METODOS ESPECIFICOS
 # CRIAR NOVO PRODUTO
@@ -79,41 +80,38 @@ class ProdutoDTO():
 # LISTAR PRODUTOS ATIVOS
 # LISTAGEM DE PRODUTOS
 
-    def carregaItem(self):
-        if not self.item.lista(self.__Data['id']):
-            self.Error = self.item.Error
+    def carregaProdutoArtigo(self):
+        if not self.artigo.lista(self.__Data['id']):
+            self.Error = self.artigo.Error
             return False
         return True
 
 
 # CREATE DESTROY METHODS
 ##################################################################################
-    def novo (self, cliente):
-        stmt = 'insert into pedido (cliente) values (%s) returning id'
+    def novo (self, artigo):
+        stmt = 'insert into produto (artigo) values (%s) returning id'
         Dados = self.db.execute(stmt, (cliente,))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
         
         self.__setData('id', Dados['Data'][0][0])
-
-        if not self.evento.novo("PEDIDO INICIADO", self.__Data['id']):
-            self.Error = self.evento.Error
-            return False
-
         return True
 
-    def remove (self, pedido):
-        stmt = 'delete from pedido where id = %s'
-        Dados = self.db.execute(stmt, (pedido,))
+    def remove (self, produto):
+        stmt = 'delete from produto where id = %s'
+        Dados = self.db.execute(stmt, (produto,))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
 
         return True
 
-    def novoItem (self, Produto, Artigo, Quantidade, Essencial, Visivel):
-            
+    def novoArtigo (self, Produto, Artigo, Quantidade, Essencial, Visivel):
+        if not self.mostra(Produto):
+            return False
+
         return True
 
 
@@ -121,19 +119,51 @@ class ProdutoDTO():
 ###############################################################################
     def mostra (self, produto):
         stmt = f"select {self.__columns()} from produto where id = %s"
-        Dados = self.db.queryOne(stmt, (pedido,))
+        
+        Dados = self.db.queryOne(stmt, (produto,))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
 
-        column = 0
-        for dtfield in self.__Data.keys():
-            self.__setData(dtfield, Dados['Data'][column])
-            column += 1
-
-        if not self.carregaItem():
+        data = Dados['Data']
+        if data is None:
+            self.Error = "PRODUCT NOT FOUND"
             return False
 
+        column = 0
+        for dtfield in self.__Data.keys():
+            self.__setData(dtfield, data[column])
+            column += 1
+
+        if not artigo.lista(produto):
+            self.Error = artigo.Error
+            return False
+
+        return True
+    
+    def mostraArtigo (self, artigo):
+        stmt = f"select {self.__columns()} from produto where artigo = %s"
+       
+        Dados = self.db.queryOne(stmt, (artigo,))
+        if not Dados['Result']:
+            self.Error = Dados['Error']
+            return False
+
+        data = Dados['Data']
+        if data is None:
+            self.Error = "PRODUCT NOT FOUND"
+            return False
+
+        column = 0
+        for dtfield in self.__Data.keys():
+            self.__setData(dtfield, data[column])
+            column += 1
+
+        produto = self.getDataField('id')
+        if not self.artigo.lista(produto):
+            self.Error = self.artigo.Error
+            return False
+       
         return True
 
     def listaAtivo(self):

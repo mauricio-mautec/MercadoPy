@@ -2,7 +2,7 @@ from   itsdangerous.serializer import Serializer
 from   itsdangerous            import TimestampSigner
 from   itsdangerous.exc        import BadSignature, BadData
 from   api.pedido.PedidoDTO    import PedidoDTO
-from   api.autenticador.AutenticadorDTO import AutenticadorDTO
+from   api.autenticador.Autenticador import TokenValidate
 from   utility                 import *
 import uuid
 import json
@@ -13,17 +13,6 @@ maxage    = int (konstantes('TOKEN','maxage'))
 
 def Log(ident, message):
     sendLog('pedido.NovoPedido', message)
-
-
-def tokenIsValid(ident, param):
-    Result, msg, AuthID, Sistema = testToken(param)
-    if not Result:
-        Log(msg, ident)
-        return False
-    else:
-        dto = AutenticadorDTO()
-        dto.updateAuth(AuthID, ident)    # UPDATE LAST CHECK TIME OF THE TOKEN
-        return True 
 
 # RETORNA CASO LOGIN / PASSWORD CONFERIR
 # JSON COM SISTEMAS QUE PODEM SER ATENDIDOS
@@ -38,28 +27,37 @@ class NovoPedido:
         # AUTORIZATION
         data = {}
         data["Api"] = ident
-        if  not tokenIsValid(ident, self.Param):
+        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt     = validate.Execute()
+        jslt     = json.loads(rslt)
+
+        if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
-            Log(data["Result"], ident)
+            Log(ident, jslt["Result"])
             return json.dumps(data)
+
+        if 'Token'    in jslt.keys():
+            data['Token']    = jslt['Token']
+        if 'Validade' in jslt.keys():
+            data['Validade'] = jslt['Validade']
 
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         if 'Cliente' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         try: 
             Cliente = int(self.Param['Cliente'])
         except:
             data["Result"] = "ERROR PARAM QUALITY"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
             
         if Cliente <= 0:
             data["Result"] = "ERROR PARAM VALUE"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         # 2 CRIA O PEDIDO
@@ -68,7 +66,7 @@ class NovoPedido:
         if not pedido.novo(client, Loja):
             data["Result"] = 'PROBLEMA NOVO PEDIDO'
             data["Error"]  = pedido.Error
-            Log(data['Error'], ident)
+            Log(ident, data['Error'])
             return json.dumps(data)
        
         pedido = pedido.getDataField('id')
@@ -89,35 +87,39 @@ class RemovePedido:
         # AUTORIZATION
         data = {}
         data["Api"] = ident
-        if  not tokenIsValid(ident, self.Param):
+        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt     = validate.Execute()
+        jslt     = json.loads(rslt)
+
+        if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
-            Log(data["Result"], ident)
+            Log(ident, jslt["Result"])
             return json.dumps(data)
 
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         if 'Pedido' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         try: 
             Pedido = int(self.Param['Pedido'])
         except:
             data["Result"] = "ERROR PARAM QUALITY"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
             
         if Pedido <= 0:
             data["Result"] = "ERROR PARAM VALUE"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         # 2 REMOVE O PEDIDO
         if not pedido.remove(Pedido):
             data["Result"] = 'PROBLEMA REMOVE PEDIDO'
             data["Error"]  = pedido.Error
-            Log(data['Error'], ident)
+            Log(ident, data['Error'])
             return json.dumps(data)
        
         data["Result"] = "OK"
@@ -135,27 +137,34 @@ class NovoItemPedido:
         # AUTORIZATION
         data = {}
         data["Api"] = ident
-        if  not tokenIsValid(ident, self.Param):
+        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt     = validate.Execute()
+        jslt     = json.loads(rslt)
+     
+        if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
-            Log(data["Result"], ident)
+            Log(ident, jslt["Result"])
             return json.dumps(data)
-
+        if 'Token'    in jslt.keys():
+            data['Token']    = jslt['Token']
+        if 'Validade' in jslt.keys():
+            data['Validade'] = jslt['Validade']
         
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         if 'Artigo' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         if 'Pedido' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         if 'Quantidade' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         try: 
@@ -165,19 +174,19 @@ class NovoItemPedido:
 
         except:
             data["Result"] = "ERROR PARAM QUALITY"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
             
         if Artigo * Pedido * Qtd <= 0:
             data["Result"] = "ERROR PARAM VALUE"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         #  SOLICITA CRIACAO DO NOVO ITEM
         if not pedido.novoItem(Pedido, Artigo, Qtd):
             data["Result"] = 'PROBLEMA NOVO ITEM PEDIDO'
             data["Error"]  = pedido.Error
-            Log(data['Error'], ident)
+            Log(ident, data['Error'])
             return json.dumps(data)
        
         data["Result"] = "OK"
@@ -196,10 +205,19 @@ class MostraArtigoVenda:
         # AUTORIZATION
         data = {}
         data["Api"] = ident
-        if  not tokenIsValid(ident, self.Param):
+        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt     = validate.Execute()
+        jslt     = json.loads(rslt)
+
+        if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
-            Log(data["Result"], ident)
+            Log(ident, jslt["Result"])
             return json.dumps(data)
+
+        if 'Token'    in jslt.keys():
+            data['Token']    = jslt['Token']
+        if 'Validade' in jslt.keys():
+            data['Validade'] = jslt['Validade']
 
         # VERIFICACAO PARAMETROS
 
@@ -207,7 +225,7 @@ class MostraArtigoVenda:
         if not pedido.mostraArtigoVenda():
             data["Result"] = 'PROBLEMA MOSTRA ARTIGOS VENDA'
             data["Error"]  = pedido.Error
-            Log(data['Error'], ident)
+            Log(ident, data['Error'])
             return json.dumps(data)
        
         data["Result"] = "OK"
@@ -226,35 +244,44 @@ class MostraPedido:
         # AUTORIZATION
         data = {}
         data["Api"] = ident
-        if  not tokenIsValid(ident, self.Param):
+        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt     = validate.Execute()
+        jslt     = json.loads(rslt)
+
+        if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
-            Log(data["Result"], ident)
+            Log(ident, jslt["Result"])
             return json.dumps(data)
+
+        if 'Token'    in jslt.keys():
+            data['Token']    = jslt['Token']
+        if 'Validade' in jslt.keys():
+            data['Validade'] = jslt['Validade']
 
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         if 'Pedido' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         try: 
             Pedido = int(self.Param['Pedido'])
         except:
             data["Result"] = "ERROR PARAM QUALITY"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
             
         if Pedido <= 0:
             data["Result"] = "ERROR PARAM VALUE"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         # 2 APRESENTA O PEDIDO
         if not pedido.mostra(Pedido):
             data["Result"] = 'PROBLEMA MOSTRA PEDIDO'
             data["Error"]  = pedido.Error
-            Log(data['Error'], ident)
+            Log(ident, data['Error'])
             return json.dumps(data)
        
         data["Result"] = "OK"
@@ -273,21 +300,30 @@ class EntregadorPedido:
         # AUTORIZATION
         data = {}
         data["Api"] = ident
-        if  not tokenIsValid(ident, self.Param):
+        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt     = validate.Execute()
+        jslt     = json.loads(rslt)
+
+        if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
-            Log(data["Result"], ident)
+            Log(ident, jslt["Result"])
             return json.dumps(data)
+
+        if 'Token'    in jslt.keys():
+            data['Token']    = jslt['Token']
+        if 'Validade' in jslt.keys():
+            data['Validade'] = jslt['Validade']
 
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         if 'Entregador' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         if 'Pedido' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         try: 
@@ -295,19 +331,19 @@ class EntregadorPedido:
             Pedido     = int(self.Param['Pedido'])
         except:
             data["Result"] = "ERROR PARAM QUALITY"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
             
         if Entregador <= 0 or Pedido <= 0:
             data["Result"] = "ERROR PARAM VALUE"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         # 2 ACRESCENTA O ENTREGADOR
         if not pedido.entregador(Entregador, Pedido):
             data["Result"] = 'PROBLEMA ENTREGADOR PEDIDO'
             data["Error"]  = pedido.Error
-            Log(data['Error'], ident)
+            Log(ident, data['Error'])
             return json.dumps(data)
        
         data["Result"] = "OK"
@@ -326,21 +362,30 @@ class DescontoPedido:
         # AUTORIZATION
         data = {}
         data["Api"] = ident
-        if  not tokenIsValid(ident, self.Param):
+        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt     = validate.Execute()
+        jslt     = json.loads(rslt)
+
+        if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
-            Log(data["Result"], ident)
+            Log(ident, jslt["Result"])
             return json.dumps(data)
+
+        if 'Token'    in jslt.keys():
+            data['Token']    = jslt['Token']
+        if 'Validade' in jslt.keys():
+            data['Validade'] = jslt['Validade']
 
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         if 'Desconto' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         if 'Pedido' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         try: 
@@ -348,19 +393,19 @@ class DescontoPedido:
             Pedido   = int(self.Param['Pedido'])
         except:
             data["Result"] = "ERROR PARAM QUALITY"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
             
         if Desconto <= 0.00 or Pedido <= 0:
             data["Result"] = "ERROR PARAM VALUE"
-            Log(data['Result'], ident)
+            Log(ident, data['Result'])
             return json.dumps(data)
 
         # 2 ACRESCENTA O ENTREGADOR
         if not pedido.desconto(Entregador, Pedido):
             data["Result"] = 'PROBLEMA DESCONTO PEDIDO'
             data["Error"]  = pedido.Error
-            Log(data['Error'], ident)
+            Log(ident, data['Error'])
             return json.dumps(data)
        
         data["Result"] = "OK"

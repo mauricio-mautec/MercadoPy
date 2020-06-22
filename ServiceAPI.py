@@ -13,7 +13,8 @@ def handleSIGCHLD(param1, param2):
     os.waitpid(-1, os.WNOHANG)
 
 def Log(message):
-    sendLog('ServiceApi', message)
+    A = 1
+    #sendLog('ServiceApi', message)
 
 def Api(ch, method, properties, data):
     npid = os.fork()

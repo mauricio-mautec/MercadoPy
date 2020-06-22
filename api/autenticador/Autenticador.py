@@ -83,17 +83,17 @@ class TokenValidate:
         self.dto    = AutenticadorDTO()
 
     def Log(self,message):
-        sendLog('autenticador.TokenValidade', message)
+        sendLog('autenticador.TokenValidate', message)
 
     def Execute (self):
         data = {}
-        api         = "autenticador.TokenValidade"
+        api         = "autenticador.TokenValidate"
         data["Api"] = api
-        Result, msg, AuthID = testToken(self.Param)
+        Result, msg, AuthID, Loja = testToken(self.Param)
         if Result:
             data["Result"] = "OK"
             self.dto = AutenticadorDTO()
-            self.dto.updateAuth(AuthID,api)    # UPDATE LAST CHECK TIME OF THE TOKEN
+            self.dto.updateAuth(AuthID, api)    # UPDATE LAST CHECK TIME OF THE TOKEN
             return json.dumps(data)
 
         info = json.loads(msg)

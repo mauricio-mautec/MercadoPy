@@ -4,7 +4,7 @@ from   utility import konstantes
 database_DB = konstantes('DATABASE','database_DB')
 banco       = importlib.import_module (database_DB)
 
-# TRABALHA OS ITENS QUE COMPOEM UM PEDIDO DE VENDA
+# RELACIONA OS ITENS QUE COMPOEM UM PEDIDO DE VENDA
 class Item_EstoqueDTO():
 # METODOS COMUNS
     def __init__(self):
@@ -18,7 +18,7 @@ class Item_EstoqueDTO():
         self.__Data = {
             'id'             : 0,
             'Pedido_Item'    : 0,
-            'Estoque_Venda'  : 0,
+            'Artigo'         : 0,
             'Quantidade'     : 0 } 
 
     def __columns (self):
@@ -60,38 +60,38 @@ class Item_EstoqueDTO():
 # ATUALIZA PEDIDO
 # LISTAR ITENS DO PEDIDO
 
-    def novo (self, pedido_item, estoque_venda, quantidade):
+    def novo (self, pedido_item, artigo, quantidade):
         self.__setData('Pedido_Item',    pedido_item)
-        self.__setData('Estoque_Artigo', artigo)
+        self.__setData('Artigo',         artigo)
         self.__setData('Quantidade',     quantidade)
 
-        stmt = 'insert into pedido_item_estoque (pedido_item, estoque_venda, quantidade) values (%s, %s, %s) returning id'
-        Dados = self.db.execute(stmt, (pedido, artigo, quantidade, valor))
+        stmt = 'insert into pedido_item_estoque (pedido_item, artigo, quantidade) values (%s, %s, %s) returning id'
+        Dados = self.db.execute(stmt, (pedido_item, artigo, quantidade))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
-        
-        self.__setData('id', Dados[0])
+       
+        ItemEstoqueID = Dados['Data'][0][0] # { "Data": [ (ID, ), ] }
+        self.__setData('id', ItemEstoqueID)
 
         return True
 
-    def remove (self, pedido, item):
+    def remove (self, pedido_item_estoque):
         self.__resetData()
-        stmt = 'delete from pedido_item where pedido  = %s and item = %s'
-        Dados = self.db.execute(stmt, (pedido, item))
+        stmt = 'delete from pedido_item_estoque where id = %s'
+        Dados = self.db.execute(stmt, (pedido_item_estoque,))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
         return True
     
-    def atualiza (self, item, pedido, artigo, quantidade, valor):
+    def atualiza (self, pedido_item_estoque, pedido_item, artigo, quantidade):
         self.__setData('id', item)
-        self.__setData('Pedido',        pedido)
+        self.__setData('Pedido_Item',   pedido_item)
         self.__setData('Artigo',        artigo)
         self.__setData('Quantidade',    quantidade)
-        self.__setData('Valor',         valor)
-        stmt = 'update pedido_item (pedido, artigo, quantidade, valor) values (%s, %s, %s, %s) where id = %s'
-        Dados = self.db.execute(stmt, (pedido, artigo, quantidade, valor, item))
+        stmt = 'update pedido_item_estoque (pedido_item, artigo, quantidade) values (%s, %s, %s) where id = %s'
+        Dados = self.db.execute(stmt, (pedido_item, artigo, quantidade, pedido_item_estoque))
         if not Dados['Result']:
             self.__resetData()
             self.__DataList = []
@@ -99,18 +99,18 @@ class Item_EstoqueDTO():
             return False
         return True        
 
-    def limpa (self, pedido):
+    def limpa (self, pedido_item):
         self.__resetData()
-        stmt = 'delete from pedido_item where pedido = %s'
-        Dados = self.db.execute(stmt, (pedido, item))
+        stmt = 'delete from pedido_item_estoque where pedido_item = %s'
+        Dados = self.db.execute(stmt, (pedido_item,))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
         return True
 
-    def lista (self, pedido):
+    def lista (self, pedido_item):
         self.__DataList = []
-        stmt = f'select {self.__columns()} from pedido_item where pedido = {pedido}'
+        stmt = f'select {self.__columns()} from pedido_item_estoque where pedido_item = {pedido_item}'
         Dados = self.db.queryAll(stmt, None)
 
         if not Dados['Result']:

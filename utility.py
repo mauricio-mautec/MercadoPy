@@ -69,6 +69,20 @@ def sendLog(api, message):
     jmsg = json.dumps(data)
     sendMessage('', jmsg, "fanout")
 
+def getTokenData(Param):
+    hugekey = konstantes('TOKEN', 'hugekey')
+    maxage  = int (konstantes('TOKEN', 'maxage'))
+    Sessao  = Param['Token']
+    # TOKEN ASSINADO COM VALORES DE SESSAO
+    slrz    = Serializer(hugekey)
+    try:
+        Token  = slrz.loads(Sessao)
+        # This payload is decoded and safe
+    except BadSignature as e:
+        return (0, 0, 0, 0, 0)
+
+    return (Token['Sistema'], Token['AuthID'], Token['UserID'], Token['__IP__'], maxage)
+
 def testToken(Param):       
     hugekey  = konstantes('TOKEN', 'hugekey')
     timekey  = konstantes('TOKEN', 'timekey')
@@ -82,7 +96,7 @@ def testToken(Param):
         # This payload is decoded and safe
     except BadSignature as e:
         msgError = '{"Api":"utility.testToken", "Result":"BAD TOKEN"}'
-        return (False, msgError, 0)
+        return (False, msgError, 0, 0)
 
     st        = TimestampSigner (timekey)
     val       = Param['Validade']
@@ -90,11 +104,11 @@ def testToken(Param):
 
     if not st.validate(Sistema, max_age = maxage):
         msgError = '{"Api":"utility.testToken", "Result":"EXPIRED"}'
-        return (False, msgError, 0)
+        return (False, msgError, 0, 0)
 
     if not Token['__IP__'] == Param['__IP__']:
         msgError = '{"Api":"utility.testToken", "Result":"BAD IP"}'
-        return (False, msgError, 0)
+        return (False, msgError, 0, 0)
 
     return (True, '{"Api":"utility.testToken", "Result":"OK"}', Token['AuthID'], Token['Sistema'])
 
@@ -129,6 +143,13 @@ class TestAPI():
         self.channel.close()
         self.connect.close()
         self.Result = data
+
+        if self.Auth and ('Token' in data) and ('Validade' in data):
+            pprint.pprint(data)
+            self.Message['Api']['Param']['Token']    = data['Token']   
+            self.Message['Api']['Param']['Validade'] = data['Validade']   
+            print ("TOKEN E VALIDADE ATUALIZADOS")
+            
 
     def startConsuming (self, callBackFunc):    
         self.connect = pika.BlockingConnection(self.parametros)

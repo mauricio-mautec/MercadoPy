@@ -1,11 +1,12 @@
-import datetime
 import importlib
 from   utility import konstantes
 database_DB = konstantes('DATABASE','database_DB')
 banco       = importlib.import_module (database_DB)
 
-# TRABALHA OS ITENS QUE COMPOEM UM PEDIDO DE VENDA
-class ItemDTO():
+'''
+TRABALHA OS ITENS QUE COMPOEM UM PRODUTO DE VENDA
+'''
+class Produto_ArtigoDTO():
 # METODOS COMUNS
     def __init__(self):
         self.__resetData()
@@ -17,10 +18,12 @@ class ItemDTO():
         # INFORMACAO QUE O DTO PRECISA TRABALHAR/FORNECER
         self.__Data = {
             'id'             : 0,
-            'Pedido'         : 0,
-            'Artigo'         : '',
+            'Produto'        : 0,
+            'Artigo'         : 0,
             'Quantidade'     : 0, 
-            'Valor'          : 0.00 }
+            'Essencial'      : True,
+            'Visivel_Pedido' : False,
+            'Custo'          : 0.00 }
 
     def __columns (self):
         strcol = ' '
@@ -37,7 +40,7 @@ class ItemDTO():
 
         datacol = 0
         for field in self.__Data.keys():        
-            self.__Data[field] = tupleData(datacol)
+            self.__Data[field] = tupleData[datacol]
             datacol += 1
         
         self.__DataList.append(self.__Data)
@@ -61,14 +64,14 @@ class ItemDTO():
 # ATUALIZA PEDIDO
 # LISTAR ITENS DO PEDIDO
 
-    def novo (self, pedido, artigo, quantidade, valor):
-        self.__setData('Pedido',        pedido)
+    def novo (self, produto, artigo, quantidade):
+        self.__setData('Produto',       produto)
         self.__setData('Artigo',        artigo)
         self.__setData('Quantidade',    quantidade)
-        self.__setData('Valor',         valor)
+        self.__setData('Custo',         custo)
 
-        stmt = 'insert into pedido_item (pedido, artigo, quantidade, valor) values (%s, %s, %s, %s) returning id'
-        Dados = self.db.execute(stmt, (pedido, artigo, quantidade, valor))
+        stmt = 'insert into produto_artigo (produto, artigo, quantidade) values (%s, %s, %s) returning id'
+        Dados = self.db.execute(stmt, (produto, artigo, quantidade))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
@@ -77,23 +80,24 @@ class ItemDTO():
 
         return True
 
-    def remove (self, pedido, item):
+    def remove (self, produto, artigo):
         self.__resetData()
-        stmt = 'delete from pedido_item where pedido  = %s and item = %s'
+        stmt = 'delete from produto_artigo where produto  = %s and artigo = %s'
         Dados = self.db.execute(stmt, (pedido, item))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
         return True
     
-    def atualiza (self, item, pedido, artigo, quantidade, valor):
-        self.__setData('id', item)
-        self.__setData('Pedido',        pedido)
-        self.__setData('Artigo',        artigo)
-        self.__setData('Quantidade',    quantidade)
-        self.__setData('Valor',         valor)
-        stmt = 'update pedido_item (pedido, artigo, quantidade, valor) values (%s, %s, %s, %s) where id = %s'
-        Dados = self.db.execute(stmt, (pedido, artigo, quantidade, valor, item))
+    def atualiza (self, produto_artigo, produto, artigo, quantidade, essencial = True, visivel_pedido = False):
+        self.__setData('id',             item)
+        self.__setData('Produto',        produto)
+        self.__setData('Artigo',         artigo)
+        self.__setData('Quantidade',     quantidade)
+        self.__setData('Essencia',       essencial)
+        self.__setData('Visivel_Pedido', visivel_pedido)
+        stmt = 'update produto_artigo (produto, artigo, quantidade, essencia, visivel_pedido) values (%s, %s, %s, %s, %s) where id = %s'
+        Dados = self.db.execute(stmt, (produto, artigo, quantidade, essencial, visivel_pedido, produto_artigo))
         if not Dados['Result']:
             self.__resetData()
             self.__DataList = []
@@ -101,18 +105,18 @@ class ItemDTO():
             return False
         return True        
 
-    def limpa (self, pedido):
+    def limpa (self, produto):
         self.__resetData()
-        stmt = 'delete from pedido_item where pedido = %s'
+        stmt = 'delete from produto_artigo where produto = %s'
         Dados = self.db.execute(stmt, (pedido, item))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
         return True
 
-    def lista (self, pedido):
+    def lista (self, produto):
         self.__DataList = []
-        stmt = f'select {self.__columns()} from pedido_item where pedido = {pedido}'
+        stmt = f'select {self.__columns()} from produto_artigo where produto = {produto}'
         Dados = self.db.queryAll(stmt, None)
 
         if not Dados['Result']:
