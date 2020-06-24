@@ -65,10 +65,14 @@ class AccessDB():
             else:
                 curs.execute (stmt, data)
 
-            hasData = (curs.statusmessage == "INSERT 0 1" or curs.statusmessage == "SELECT 1")
+            hasData = (curs.statusmessage == "INSERT 0 1"
+                    or curs.statusmessage == "SELECT 1"
+                    or curs.statusmessage == "UPDATE 1")
+
             if hasData:
                 Data = curs.fetchall()
                 self.Dados['Data'] = Data
+
             conn.commit()
             Result = True;
         

@@ -132,6 +132,9 @@ testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
 if testAPI.Result['Result'] != "OK":
     print(f"FALHA TESTE {teste}")
+    print("ENVIADO:")
+    pp.pprint(Api)
+    print("RECEBIDO:")
     pp.pprint(testAPI.Result)
     sys.exit(0)
 else:

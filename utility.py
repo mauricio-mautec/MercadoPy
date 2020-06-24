@@ -145,11 +145,8 @@ class TestAPI():
         self.Result = data
 
         if self.Auth and ('Token' in data) and ('Validade' in data):
-            pprint.pprint(data)
-            self.Message['Api']['Param']['Token']    = data['Token']   
-            self.Message['Api']['Param']['Validade'] = data['Validade']   
-            print ("TOKEN E VALIDADE ATUALIZADOS")
-            
+            self.Token    = data['Token']   
+            self.Validade = data['Validade']   
 
     def startConsuming (self, callBackFunc):    
         self.connect = pika.BlockingConnection(self.parametros)
@@ -158,7 +155,7 @@ class TestAPI():
         self.channel.queue_declare    (queue = self.clientQueue)
         self.channel.queue_bind       (exchange = self.exchange, queue = self.clientQueue)
         self.channel.basic_consume(self.clientQueue, on_message_callback=callBackFunc, auto_ack=True, exclusive=True)
-        print(f'[{self.clientQueue}]')
+        print(f'Queue: [{self.clientQueue}]')
         self.channel.start_consuming()
 
     def sendMessageToQueue (self, queue):    
@@ -187,15 +184,3 @@ class TestAPI():
         sendLog(self.ApiName, what)
 
 
-data =  {
-            "Api": {
-                "Name": "autenticador.Token",
-                "Param": {
-                    "Login": "sergio.moreira@gmail.com",
-                    "Password": "veiM4biu",
-                    "Sistema" : 2,
-                    "Appid" : { "Name" : "hudflutter", "Version" : "text da versao", "Appsys": "win64, android trálálá, iphone"}
-                }
-            },
-            "Rsp": "answerChannel"
-        }

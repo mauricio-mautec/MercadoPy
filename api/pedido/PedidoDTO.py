@@ -175,14 +175,37 @@ class PedidoDTO():
         return True
 
     def encerra (self):
-        stmt = 'update pedido set concluido = True where id = %s'
-        Dados = self.db.execute(stmt, (pedido,))
+        stmt   = 'update pedido set concluido = True where id = %s'
+        pedido = self.__Data['id']
+        Dados  = self.db.execute(stmt, (pedido,))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
 
         if not self.evento.novo("PEDIDO CONCLUIDO", self.__Data['id']):
             return False
+
+        return True
+
+    def atualizaValor (self):
+        pedido = self.__Data['id']
+        stmt = 'select sum(valor) from pedido_item where pedido = %s'
+        Dados  = self.db.execute(stmt, (pedido, ))
+        if not Dados['Result']:
+            self.Error = Dados['Error']
+            return False
+        valor = Dados['Data'][0][0]
+        stmt = 'update pedido set valor = %s, total = (%s - desconto + entrega) where id = %s and concluido =  FALSE returning ' + self.__columns()
+        Dados  = self.db.execute(stmt, (valor, valor, pedido))
+        if not Dados['Result']:
+            self.Error = Dados['Error']
+            return False
+        
+        column = 0
+        for dtfield in self.__Data.keys():
+            self.__setData(dtfield, Dados['Data'][0][column])
+            column += 1
+
         return True
 
 # SET METODOS
@@ -199,7 +222,7 @@ class PedidoDTO():
 
         column = 0
         for dtfield in self.__Data.keys():
-            self.__setData(dtfield, Dados['Data'][column])
+            self.__setData(dtfield, Dados['Data'][0][column])
             column += 1
 
         if not self.evento.novo("ACRESCENTADO ENTREGADOR", self.__Data['id']):
@@ -208,15 +231,15 @@ class PedidoDTO():
         return True
 
     def desconto (self, desconto, pedido):
-        stmt = 'update pedido set desconto = %s, total = (valor - desconto + entrega) where id = %s and concluido = FALSE returning ' + self.__columns()
-        Dados = self.db.execute(stmt, (desconto, pedido))
+        stmt = 'update pedido set desconto = %s, total = (valor - %s + entrega) where id = %s and concluido = FALSE returning ' + self.__columns()
+        Dados = self.db.execute(stmt, (desconto, desconto, pedido))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
 
         column = 0
         for dtfield in self.__Data.keys():
-            self.__setData(dtfield, Dados['Data'][column])
+            self.__setData(dtfield, Dados['Data'][0][column])
             column += 1
 
         if not self.evento.novo("ACRESCENTADO DESCONTO", self.__Data['id']):
@@ -225,15 +248,15 @@ class PedidoDTO():
         return True
     
     def entrega (self, entrega, pedido):
-        stmt = 'update pedido set entrega = %s, total = (valor - desconto + entrega where id = %s and concluido = FALSE returning ' + self.__columns()
-        Dados = self.db.execute(stmt, (entrega, pedido))
+        stmt = 'update pedido set entrega = %s, total = (valor - desconto + %s) where id = %s and concluido = FALSE returning ' + self.__columns()
+        Dados = self.db.execute(stmt, (entrega, entrega, pedido))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
 
         column = 0
         for dtfield in self.__Data.keys():
-            self.__setData(dtfield, Dados['Data'][column])
+            self.__setData(dtfield, Dados['Data'][0][column])
             column += 1
         
         if not self.evento.novo("ACRESCENTADO VALOR ENTREGA", self.__Data['id']):
@@ -250,7 +273,7 @@ class PedidoDTO():
 
         column = 0
         for dtfield in self.__Data.keys():
-            self.__setData(dtfield, Dados['Data'][column])
+            self.__setData(dtfield, Dados['Data'][0][column])
             column += 1
         
         if not self.evento.novo("ACRESCENTADO OBSERVACAO ENTREGA", self.__Data['id']):
@@ -276,12 +299,25 @@ class PedidoDTO():
         return True
 
     def remove (self, pedido):
-        stmt = 'delete from pedido where id = %s'
+        if not self.evento.novo("PEDIDO REMOVIDO", pedido):
+            self.Error = self.evento.Error
+            return False
+
+        stmt = 'insert into pedido_historico (pedido, data, evento) select pedido, data, evento from pedido_evento where pedido = %s'
         Dados = self.db.execute(stmt, (pedido,))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
 
+
+        stmt = 'delete from pedido where id = %s'
+        Dados = self.db.execute(stmt, (pedido,))
+        if not Dados['Result']:
+            self.Error = Dados['Error']
+            return False
+        
+        self.__resetData()
+        self.__DataList = []
         return True
 
     def novoItem (self, Pedido, Artigo, Quantidade):
@@ -326,6 +362,12 @@ class PedidoDTO():
                 self.Error = self.item_estoque.Error
                 return False
 
+            if not self.atualizaValor():
+                return False
+
+            if not self.evento.novo("ACRESCENTADO ITEM VENDA", self.__Data['id']):
+                return False
+
             return True
 
         if funcao == 'VENDA PRODUTO':
@@ -352,22 +394,13 @@ class PedidoDTO():
                     self.item.remove (Pedido, pedidoItem)
                     return False
 
-                
+            if not self.atualizaValor():
+                return False
 
-            '''    
-            Valor = float(self.artigo.getDataField('Valor_Venda'))
-            if Valor <= 0:
-                self.Error = "Artigo Sem Valor de Venda"
+            if not self.evento.novo("ACRESCENTADO ITEM PRODUTO", self.__Data['id']):
                 return False
-                
-            if not self.item.novo(Pedido, Artigo, Quantidade, Valor):
-                return False
-           
-            pedidoItem = self.item.getDataField('id')
-            stmt = "select artigo from produto_artigo where produt "
-            '''
-            return True
-            
+
+            return True    
 
         # teste para o caso de produtos funcao VENDA PRODUTO
 
@@ -410,13 +443,13 @@ class PedidoDTO():
         return True
 
     def listaAberto(self):
-        self.__DataList = []
         stmt = f"select {self.__columns()} from pedido where concluido = False order by id"
         Dados = self.db.queryAll(stmt, None)
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
 
+        self.__DataList = []
         for tupleInList in Dados['Data']:
             self.__setDataList(tupleInList)
 
