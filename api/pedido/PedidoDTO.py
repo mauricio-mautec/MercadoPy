@@ -17,6 +17,7 @@ class PedidoDTO():
     def __init__(self):
         self.__resetData()
         self.__DataList = []
+        self.Error        = ''
         self.db           = banco.AccessDB()
         self.item         = ItemDTO()
         self.item_estoque = Item_EstoqueDTO()
@@ -57,8 +58,11 @@ class PedidoDTO():
         self.__resetData()
 
         datacol = 0
-        for field in self.__Data.keys():        
-            self.__Data[field] = tupleData(datacol)
+        for field in self.__Data.keys():  
+            if isinstance(tupleData[datacol], (date, datetime)):
+                self.__Data[field] = tupleData[datacol].isoformat()
+            else:    
+                self.__Data[field] = tupleData[datacol]
             datacol += 1
         
         self.__DataList.append(self.__Data)
@@ -150,26 +154,31 @@ class PedidoDTO():
 ##################################################################################
     def enviaProducao (self):
         if not self.evento.novo("ENVIADO PRODUCAO", self.__Data['id']):
+            self.Error = self.evento.Error
             return False
         return True
 
     def emProducao (self):
         if not self.evento.novo("EM PRODUCAO", self.__Data['id']):
+            self.Error = self.evento.Error
             return False
         return True
 
     def finalizaProducao (self):
         if not self.evento.novo("FINALIZADO PRODUCAO", self.__Data['id']):
+            self.Error = self.evento.Error
             return False
         return True
 
     def enviaEntrega (self):
         if not self.evento.novo("ENVIADO ENTREGA", self.__Data['id']):
+            self.Error = self.evento.Error
             return False
         return True
 
     def finalizaEntrega (self):
         if not self.evento.novo("FINALIZA ENTREGA", self.__Data['id']):
+            self.Error = self.evento.Error
             return False
         return True
 
@@ -182,6 +191,7 @@ class PedidoDTO():
             return False
 
         if not self.evento.novo("PEDIDO CONCLUIDO", self.__Data['id']):
+            self.Error = self.evento.Error
             return False
 
         return True
@@ -219,12 +229,17 @@ class PedidoDTO():
             self.Error = Dados['Error']
             return False
 
-        column = 0
-        for dtfield in self.__Data.keys():
-            self.__setData(dtfield, Dados['Data'][0][column])
-            column += 1
+        if Dados['Data'] != None:
+            column = 0
+            for dtfield in self.__Data.keys():
+                self.__setData(dtfield, Dados['Data'][0][column])
+                column += 1
+        else:
+             self.Error = f"ENTREGADOR NAO APLICADO AO PEDIDO [{pedido}]"
+             return False
 
         if not self.evento.novo("ACRESCENTADO ENTREGADOR", self.__Data['id']):
+            self.Error = self.evento.Error
             return False
 
         return True
@@ -249,24 +264,32 @@ class PedidoDTO():
             return False
 
         if not self.evento.novo("ACRESCENTADO DESCONTO", self.__Data['id']):
-            self.Error = f"DESCONTO NAO APLICADO AO PEDIDO [{pedido}]"
+            self.Error = self.evento.Error
             return False
 
         return True
     
     def entrega (self, entrega, pedido):
+        if not self.mostra(pedido):
+            return False 
+
         stmt = 'update pedido set entrega = %s, total = (valor - desconto + %s) where id = %s and concluido = FALSE returning ' + self.__columns()
         Dados = self.db.execute(stmt, (entrega, entrega, pedido))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
 
-        column = 0
-        for dtfield in self.__Data.keys():
-            self.__setData(dtfield, Dados['Data'][0][column])
-            column += 1
-        
+        if Dados['Data'] != None:
+            column = 0
+            for dtfield in self.__Data.keys():
+                self.__setData(dtfield, Dados['Data'][0][column])
+                column += 1
+        else:
+             self.Error = f"ENTREGA NAO APLICADA AO PEDIDO [{pedido}]"
+             return False
+
         if not self.evento.novo("ACRESCENTADO VALOR ENTREGA", self.__Data['id']):
+            self.Error = self.evento.Error
             return False
 
         return True
@@ -284,10 +307,18 @@ class PedidoDTO():
             column += 1
         
         if not self.evento.novo("ACRESCENTADO OBSERVACAO ENTREGA", self.__Data['id']):
+            self.Error = self.evento.Error
             return False
 
         return True
 
+    def aceitaPedido (self, pedido):
+        # CONSULTAR EM PEDIDO_ITEM_ESTOQUE A DISPONIBILIDADE
+        # ATUALIZAR ESTOQUE VENDA RETIRANDO CADA ARTIGO
+        # FECHAR O PEDIDO
+        # ENVIAR PARA PRODUCAO
+        return True
+       
 # CREATE DESTROY METHODS
 ##################################################################################
     def novo (self, cliente, loja):
@@ -327,35 +358,33 @@ class PedidoDTO():
         return True
 
     def novoItem (self, Pedido, Artigo, Quantidade):
-        
         if not self.mostra(Pedido):
             return False
 
         if not self.artigo.mostra(Artigo):
             return False
-
-
+        
         funcao = self.artigo.getDataField('Funcao')
         if funcao is None:
-            self.Error = "Artigo sem Funcao"
+            self.Error = "ARTIGO SEM FUNCAO"
             return False
         
         Loja  = self.getDataField('Loja')
         Valor = float(self.artigo.getDataField('Valor_Venda'))
         if Valor <= 0:
-            self.Error = "Artigo Sem Valor de Venda"
+            self.Error = "ARTIGO SEM VALOR DE VENDA"
             return False
-        
+
         if funcao == 'VENDA':
             disponivel, qtd = self.artigo.disponivelEstoque(Loja, Artigo)
 
             if not disponivel:
-                self.Error = f"Artigo {Artigo} Indisponivel"
+                self.Error = f"ARTIGO {Artigo} INDISPONIVEL"
                 self.Error = self.artigo.Error
                 return False
 
             if qtd is None or qtd < Quantidade:
-                self.Error = f"Loja {Loja} Artigo {Artigo} Qtd {qtd} Insuficiente"
+                self.Error = f"LOJA {Loja} ARTIGO {Artigo} QTD {qtd} INSUFICIENTE"
                 return False
 
                 
@@ -372,6 +401,7 @@ class PedidoDTO():
                 return False
 
             if not self.evento.novo("ACRESCENTADO ITEM VENDA", self.__Data['id']):
+                self.Error = self.evento.Error
                 return False
 
             return True
@@ -391,7 +421,7 @@ class PedidoDTO():
             for produtoArtigo in produtoArtigos:
                 disponivel, qtd = self.artigo.disponivelEstoque(Loja, produtoArtigo['Artigo'])
                 if not disponivel or qtd < produtoArtigo['Quantidade']:
-                    self.Error = "Estoque Venda Sem Artigo"
+                    self.Error = f"ESTOQUE VENDA SEM ARTIGO [{produtoArtigo['Artigo']}]"
                     self.item.remove (Pedido, pedidoItem)
                     return False
 
@@ -403,7 +433,8 @@ class PedidoDTO():
             if not self.atualizaValor():
                 return False
 
-            if not self.evento.novo("ACRESCENTADO ITEM PRODUTO", self.__Data['id']):
+            if not self.evento.novo("ACRESCENTADO ITEM ARTIGO PRODUTO", Pedido):
+                self.Error = self.evento.Error
                 return False
 
             return True    
@@ -411,13 +442,6 @@ class PedidoDTO():
         # teste para o caso de produtos funcao VENDA PRODUTO
 
         return True
-# PEDIDO_ITEM_ESTOQUE RELACIONA OS ITENS NECESSARIOS ATE O MOMENTO DO ACEITE DO PEDIDO
-# KEEP IT SIMPLE        
-        #  Carregar o Pedido, Artigo
-        #  Identificar o tipo do Artigo
-        #  Verificar disponibilidade dos novos itens no estoque_venda
-        #  Criar novo Item para o Pedido em pedido_item
-        #  Criar itens relacionados em pedido_item_estoque
 
 # SHOW METHODS
 ###############################################################################
@@ -429,6 +453,7 @@ class PedidoDTO():
         return True
 
     def mostra (self, pedido):
+        self.__resetData()
         stmt = f"select {self.__columns()} from pedido where id = %s"
         Dados = self.db.queryOne(stmt, (pedido,))
         if not Dados['Result']:
@@ -445,9 +470,11 @@ class PedidoDTO():
             return False
 
         if not self.carregaItem():
+            self.Error = "carregaItem"
             return False
 
         if not self.carregaEvento():
+            self.Error = 'carregaEvento'
             return False
 
         return True

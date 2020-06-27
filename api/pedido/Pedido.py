@@ -133,12 +133,12 @@ class RemovePedido:
 
         return json.dumps(data)
 
-class NovoItemPedido:
+class NovoItem:
     def __init__(self, Param):
         self.Param  = Param
 
     def Execute (self):
-        ident  = "pedido.NovoItemPedido"
+        ident  = "pedido.NovoItem"
         pedido = PedidoDTO()
 
         # AUTORIZATION
@@ -424,3 +424,216 @@ class DescontoPedido:
         data["Data"]   = pedido.getData()
 
         return json.dumps(data)
+
+class ValorEntrega:
+    def __init__(self, Param):
+        self.Param  = Param
+
+    def Execute (self):
+        pedido = PedidoDTO()
+        ident  = "pedido.ValorEntrega"
+
+        # AUTORIZATION
+        data = {}
+        data["Api"] = ident
+        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt     = validate.Execute()
+        jslt     = json.loads(rslt)
+
+        if  jslt['Result'] != 'OK':
+            data["Result"] = "TOKEN NOT VALID"
+            data["Error"]  = jslt["Result"]
+            Log(ident, jslt["Result"])
+            return json.dumps(data)
+
+        if 'Token'    in jslt.keys():
+            data['Token']    = jslt['Token']
+        if 'Validade' in jslt.keys():
+            data['Validade'] = jslt['Validade']
+
+        # VERIFICACAO PARAMETROS
+        paramKeys = self.Param.keys()
+        if 'Entrega' not in paramKeys:
+            data["Result"] = "ERROR PARAM NOT FOUND"
+            Log(ident, data['Result'])
+            return json.dumps(data)
+
+        if 'Pedido' not in paramKeys:
+            data["Result"] = "ERROR PARAM NOT FOUND"
+            Log(ident, data['Result'])
+            return json.dumps(data)
+
+        try: 
+            Entrega  = float(self.Param['Entrega'])
+            Pedido   = int(self.Param['Pedido'])
+        except:
+            data["Result"] = "ERROR PARAM QUALITY"
+            Log(ident, data['Result'])
+            return json.dumps(data)
+            
+        if Entrega <= 0.00 or Pedido <= 0:
+            data["Result"] = "ERROR PARAM VALUE"
+            Log(ident, data['Result'])
+            return json.dumps(data)
+
+        # 2 ACRESCENTA O ENTREGADOR
+        if not pedido.entrega(Entrega, Pedido):
+            data["Result"] = 'PROBLEMA ENTREGA PEDIDO'
+            data["Error"]  = pedido.Error
+            Log(ident, data['Error'])
+            return json.dumps(data)
+       
+        data["Result"] = "OK"
+        data["Data"]   = pedido.getData()
+
+        return json.dumps(data)
+
+class ObservacaoEntrega:
+    def __init__(self, Param):
+        self.Param  = Param
+
+    def Execute (self):
+        pedido = PedidoDTO()
+        ident  = "pedido.ObservacaoEntrega"
+
+        # AUTORIZATION
+        data = {}
+        data["Api"] = ident
+        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt     = validate.Execute()
+        jslt     = json.loads(rslt)
+
+        if  jslt['Result'] != 'OK':
+            data["Result"]  = "TOKEN NOT VALID"
+            data["Error"]   = jslt["Result"]
+            Log(ident, jslt["Result"])
+            return json.dumps(data)
+
+        if 'Token'    in jslt.keys():
+            data['Token']    = jslt['Token']
+        if 'Validade' in jslt.keys():
+            data['Validade'] = jslt['Validade']
+
+        # VERIFICACAO PARAMETROS
+        paramKeys = self.Param.keys()
+        if 'Observacao' not in paramKeys:
+            data["Result"] = "ERROR PARAM NOT FOUND"
+            Log(ident, data['Result'])
+            return json.dumps(data)
+
+        if 'Pedido' not in paramKeys:
+            data["Result"] = "ERROR PARAM NOT FOUND"
+            Log(ident, data['Result'])
+            return json.dumps(data)
+
+        try: 
+            Observ  = str(self.Param['Observacao']).strip()
+            Pedido   = int(self.Param['Pedido'])
+        except:
+            data["Result"] = "ERROR PARAM QUALITY"
+            Log(ident, data['Result'])
+            return json.dumps(data)
+            
+        if Pedido <= 0 or len(Observ) <= 0:
+            data["Result"] = "ERROR PARAM VALUE"
+            Log(ident, data['Result'])
+            return json.dumps(data)
+
+        # 2 ACRESCENTA O ENTREGADOR
+        if not pedido.observacaoEntrega(Observ, Pedido):
+            data["Result"] = 'PROBLEMA OBSERVACAO ENTREGA'
+            data["Error"]  = pedido.Error
+            Log(ident, data['Error'])
+            return json.dumps(data)
+       
+        data["Result"] = "OK"
+        data["Data"]   = pedido.getData()
+
+        return json.dumps(data)
+
+# APRESENTA PEDIDOS EM ABERTO
+class ApresentaPedidos:
+    def __init__(self, Param):
+        self.Param = Param
+    
+    def Execute (self):
+        pedido = PedidoDTO()
+        ident  = "pedido.ApresentaPedidos"
+
+        # AUTORIZATION
+        data = {}
+        data["Api"] = ident
+        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt     = validate.Execute()
+        jslt     = json.loads(rslt)
+
+        if  jslt['Result'] != 'OK':
+            data["Result"] = "TOKEN NOT VALID"
+            data["Error"]  = jslt["Result"]
+            Log(ident, jslt["Result"])
+            return json.dumps(data)
+
+        if 'Token'    in jslt.keys():
+            data['Token']    = jslt['Token']
+        if 'Validade' in jslt.keys():
+            data['Validade'] = jslt['Validade']
+
+        # VERIFICACAO PARAMETROS
+
+        # APRESENTA RELACAO DE PEDIDOS
+        if not pedido.listaAberto():
+            data['Result'] = Dados['Error']
+            data['Data']   = None
+            return json.dumps(data)
+
+        data['Result'] = 'OK'
+        data['Data']   = pedido.getDataList()
+        return json.dumps(data)
+
+# DA BAIXA EM ESTOQUE_VENDA E ENVIA PEDIDO PARA PRODUCAO
+class AceitaPedido:   
+    def __init__(self, Param):
+        self.Param  = Param
+
+    def Execute (self):
+        pedido = PedidoDTO()
+        ident  = "pedido.AceitaPedido"
+
+        # AUTORIZATION
+        data = {}
+        data["Api"] = ident
+        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt     = validate.Execute()
+        jslt     = json.loads(rslt)
+
+        if  jslt['Result'] != 'OK':
+            data["Result"] = "TOKEN NOT VALID"
+            data["Error"]  = jslt["Result"]
+            Log(ident, jslt["Result"])
+            return json.dumps(data)
+
+        if 'Token'    in jslt.keys():
+            data['Token']    = jslt['Token']
+        if 'Validade' in jslt.keys():
+            data['Validade'] = jslt['Validade']
+
+        # VERIFICACAO PARAMETROS
+        paramKeys = self.Param.keys()
+        if 'Pedido' not in paramKeys:
+            data["Result"] = "ERROR PARAM NOT FOUND"
+            Log(ident, data['Result'])
+            return json.dumps(data)
+
+        try: 
+            Pedido   = int(self.Param['Pedido'])
+        except:
+            data["Result"] = "ERROR PARAM QUALITY"
+            Log(ident, data['Result'])
+            return json.dumps(data)
+            
+        if Entrega <= 0.00 or Pedido <= 0:
+            data["Result"] = "ERROR PARAM VALUE"
+            Log(ident, data['Result'])
+            return json.dumps(data)
+
+        # 2 ACEITA O PEDIDO

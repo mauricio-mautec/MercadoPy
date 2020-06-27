@@ -166,8 +166,10 @@ class ArtigoDTO():
         if not Dados['Result']:
             self.Error = Dados['Error']
             return (False, 0)
-           
+
         qtd = Dados['Data'][0][0]
+        if qtd == None: qtd = 0
+        
         result = (True, qtd)
 
         return result

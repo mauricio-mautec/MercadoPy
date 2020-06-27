@@ -115,12 +115,9 @@ if testAPI.Result['Result'] != "OK":
     pp.pprint(testAPI.Result)
     sys.exit(0)
 else:
+    Pedido = testAPI.Result["Pedido"]
     N += 1
-    print(f"TESTE {N} {teste}: OK")
-    
-
-Pedido = testAPI.Result["Pedido"]
-Log(f"Pedido no.:{Pedido}")
+    print(f"TESTE {N} {teste} PEDIDO {Pedido}: OK")
 
 # REMOCAO DO PEDIDO CRIADO
 teste   = f"REMOCAO DO PEDIDO {Pedido} CRIADO"
@@ -155,7 +152,9 @@ if testAPI.Result['Result'] != "OK":
     sys.exit(0)
 else:
     Pedido = testAPI.Result["Pedido"]
-    Log(f"Pedido no.: {Pedido}")
+    N += 1
+    print(f"TESTE {N} {teste} {Pedido}: OK")
+
 
 # LISTAR ARTIGOS PARA VENDA
 teste   = "LISTAR ARTIGOS PARA VENDA"
@@ -188,7 +187,7 @@ art_3 = pyobj['id']
 # INSERIR UM ITEM PRESENTE NO ESTOQUE_VENDA
 teste   = "INSERIR UM ITEM PRESENTE NO ESTOQUE_VENDA"
 Param   = {"Pedido" : Pedido, "Artigo": art_1, "Quantidade": 1}
-Api     = {"Name": "pedido.NovoItemPedido", "Param": Param}
+Api     = {"Name": "pedido.NovoItem", "Param": Param}
 testAPI.Message["Api"] =  Api
 Log(teste)
 testAPI.sendMessageToQueue(queue);
@@ -206,7 +205,7 @@ else:
 # INSERIR UM ITEM AUSENTE NO ESTOQUE_VENDA
 teste   = "INSERIR UM ITEM AUSENTE NO ESTOQUE_VENDA"
 Param   = {"Pedido" : Pedido, "Artigo": art_2, "Quantidade": 1}
-Api     = {"Name": "pedido.NovoItemPedido", "Param": Param}
+Api     = {"Name": "pedido.NovoItem", "Param": Param}
 testAPI.Message["Api"] =  Api
 Log(teste)
 testAPI.sendMessageToQueue(queue);
@@ -219,13 +218,12 @@ if testAPI.Result['Result'] != "PROBLEMA NOVO ITEM PEDIDO":
 else:
     N += 1
     print(f"TESTE {N} {teste}: OK")
-    
     Log(testAPI.Result)
 
 # INSERIR UM ITEM AUSENTE NO ESTOQUE_VENDA
 teste   = "INSERIR UM ITEM EM QTD A MENOR NO ESTOQUE_VENDA"
 Param   = {"Pedido" : Pedido, "Artigo": art_3, "Quantidade": 3}
-Api     = {"Name": "pedido.NovoItemPedido", "Param": Param}
+Api     = {"Name": "pedido.NovoItem", "Param": Param}
 testAPI.Message["Api"] =  Api
 Log(teste)
 testAPI.sendMessageToQueue(queue);
@@ -238,13 +236,12 @@ if testAPI.Result['Result'] != "PROBLEMA NOVO ITEM PEDIDO":
 else:
     N += 1
     print(f"TESTE {N} {teste}: OK")
-    
     Log(testAPI.Result)
 
 # INSERIR UM ITEM COMPOSTO (VENDA PRODUTO) PRESENTE NO ESTOQUE_VENDA
 teste   =  "INSERIR UM ITEM COMPOSTO (VENDA PRODUTO) PRESENTE NO ESTOQUE_VENDA"
 Param   = {"Pedido" : Pedido, "Artigo": 62, "Quantidade": 1}
-Api     = {"Name": "pedido.NovoItemPedido", "Param": Param}
+Api     = {"Name": "pedido.NovoItem", "Param": Param}
 testAPI.Message["Api"] =  Api
 Log(teste)
 testAPI.sendMessageToQueue(queue);
@@ -257,7 +254,6 @@ if testAPI.Result['Result'] != "OK":
 else:
     N += 1
     print(f"TESTE {N} {teste}: OK")
-    
     Log(testAPI.Result)
 
 # INSERIR UM DESCONTO NEGATIVO NO PEDIDO
@@ -276,7 +272,6 @@ if testAPI.Result['Result'] != "ERROR PARAM VALUE":
 else:
     N += 1
     print(f"TESTE {N} {teste}: OK")
-    
     Log(testAPI.Result)
 
 # INSERIR UM DESCONTO PROB PARAMETROS
@@ -295,7 +290,6 @@ if testAPI.Result['Result'] != "ERROR PARAM NOT FOUND":
 else:
     N += 1
     print(f"TESTE {N} {teste}: OK")
-    
     Log(testAPI.Result)
 
 # INSERIR UM DESCONTO PROB PARAMETROS 2
@@ -314,7 +308,6 @@ if testAPI.Result['Result'] != "ERROR PARAM NOT FOUND":
 else:
     N += 1
     print(f"TESTE {N} {teste}: OK")
-    
     Log(testAPI.Result)
 
 # INSERIR UM DESCONTO PROB PARAMETROS 3
@@ -333,7 +326,6 @@ if testAPI.Result['Result'] != "ERROR PARAM QUALITY":
 else:
     N += 1
     print(f"TESTE {N} {teste}: OK")
-    
     Log(testAPI.Result)
 
 # INSERIR UM DESCONTO PARA UM PEDIDO INEXISTENTE
@@ -354,5 +346,114 @@ if   result != "PROBLEMA DESCONTO PEDIDO" and  error != "PEDIDO INEXISTENTE":
 else:
     N += 1
     print(f"TESTE {N} {teste}: OK")
-    
+    Log(testAPI.Result)
+
+# INSERIR UM DESCONTO PARA UM PEDIDO EXISTENTE
+teste   =  f"INSERIR UM DESCONTO PEDIDO {Pedido}"
+Param   = {"Pedido": Pedido, "Desconto": "0.50"}
+Api     = {"Name": "pedido.DescontoPedido", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if   testAPI.Result['Result'] != "OK":
+    print(f"FALHA TESTE {teste}")
+    pp.pprint(Param)
+    pp.pprint(testAPI.Result)
+    sys.exit(0)
+else:
+    N += 1
+    print(f"TESTE {N} {teste}: OK")
+    Log(testAPI.Result)
+
+# INSERIR ENTREGA PARA UM PEDIDO EXISTENTE
+teste   =  f"INSERIR ENTREGA PEDIDO {Pedido}"
+Param   = {"Pedido": Pedido, "Entrega": "2.70"}
+Api     = {"Name": "pedido.ValorEntrega", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if   testAPI.Result['Result'] != "OK":
+    print(f"FALHA TESTE {teste}")
+    pp.pprint(Param)
+    pp.pprint(testAPI.Result)
+    sys.exit(0)
+else:
+    N += 1
+    print(f"TESTE {N} {teste}: OK")
+    Log(testAPI.Result)
+
+# INSERIR ENTREGADOR PARA UM PEDIDO EXISTENTE
+teste   =  f"INSERIR ENTREGADOR PEDIDO {Pedido}"
+Param   = {"Pedido": Pedido, "Entregador": "10"}
+Api     = {"Name": "pedido.EntregadorPedido", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if   testAPI.Result['Result'] != "OK":
+    print(f"FALHA TESTE {teste}")
+    pp.pprint(Param)
+    pp.pprint(testAPI.Result)
+    sys.exit(0)
+else:
+    N += 1
+    print(f"TESTE {N} {teste}: OK")
+    Log(testAPI.Result)
+
+# ACRESCENTAR UMA OBSERVACAO DE ENTREGA
+teste   =  f"ACRESCENTAR OBSERVACAO ENTREGA PEDIDO {Pedido}"
+Param   = {"Pedido": Pedido, "Observacao": "CASA AMARELA, PORTAO MARROM, SEM CAMPANHINHA"}
+Api     = {"Name": "pedido.ObservacaoEntrega", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if   testAPI.Result['Result'] != "OK":
+    print(f"FALHA TESTE {teste}")
+    pp.pprint(Param)
+    pp.pprint(testAPI.Result)
+    sys.exit(0)
+else:
+    N += 1
+    print(f"TESTE {N} {teste}: OK")
+    Log(testAPI.Result)
+
+
+
+# APRESENTA PEDIDO
+teste   =  f"APRESENTA PEDIDO {Pedido}"
+Param   = {"Pedido": Pedido}
+Api     = {"Name": "pedido.MostraPedido", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if   testAPI.Result['Result'] != "OK":
+    print(f"FALHA TESTE {teste}")
+    pp.pprint(Param)
+    pp.pprint(testAPI.Result)
+    sys.exit(0)
+else:
+    N += 1
+    print(f"TESTE {N} {teste}: OK")
+    Log(testAPI.Result)
+
+# LISTA PEDIDOS EM ABERTO
+teste   =  "LISTA PEDIDOS EM ABERTO"
+Param   = {}
+Api     = {"Name": "pedido.ApresentaPedidos", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if   testAPI.Result['Result'] != "OK":
+    print(f"FALHA TESTE {teste}")
+    pp.pprint(Param)
+    pp.pprint(testAPI.Result)
+    sys.exit(0)
+else:
+    N += 1
+    print(f"TESTE {N} {teste}: OK")
     Log(testAPI.Result)
