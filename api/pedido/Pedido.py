@@ -12,7 +12,7 @@ timekey   = konstantes('TOKEN','timekey')
 maxage    = int (konstantes('TOKEN','maxage'))
 
 def Log(ident, message):
-    sendLog('pedido.NovoPedido', message)
+    sendLog(ident, message)
 
 # RETORNA CASO LOGIN / PASSWORD CONFERIR
 # JSON COM SISTEMAS QUE PODEM SER ATENDIDOS
@@ -27,12 +27,13 @@ class NovoPedido:
         # AUTORIZATION
         data = {}
         data["Api"] = ident
-        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
-        rslt     = validate.Execute()
-        jslt     = json.loads(rslt)
+        validate    = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt        = validate.Execute()
+        jslt        = json.loads(rslt)
 
         if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
+            data['Error']  = jslt['Result']
             Log(ident, jslt["Result"])
             return json.dumps(data)
 
@@ -43,6 +44,8 @@ class NovoPedido:
 
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
+        Loja      = jslt['Loja']
+        
         if 'Cliente' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
             Log(ident, data['Result'])
@@ -61,7 +64,6 @@ class NovoPedido:
             return json.dumps(data)
 
         # 2 CRIA O PEDIDO
-        Result, msg, AuthID, Loja = testToken(self.Param)
         client = self.Param['Cliente']
         if not pedido.novo(client, Loja):
             data["Result"] = 'PROBLEMA NOVO PEDIDO'
@@ -74,7 +76,6 @@ class NovoPedido:
         data["Result"] = "OK"
 
         return json.dumps(data)
-
 
 class RemovePedido:
     def __init__(self, Param):
@@ -93,9 +94,15 @@ class RemovePedido:
 
         if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
+            data['Error']  = jslt['Result']
             Log(ident, jslt["Result"])
             return json.dumps(data)
 
+        if 'Token'    in jslt.keys():
+            data['Token']    = jslt['Token']
+        if 'Validade' in jslt.keys():
+            data['Validade'] = jslt['Validade']
+            
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         if 'Pedido' not in paramKeys:
@@ -143,8 +150,10 @@ class NovoItemPedido:
      
         if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
+            data['Error']  = jslt['Result']
             Log(ident, jslt["Result"])
             return json.dumps(data)
+
         if 'Token'    in jslt.keys():
             data['Token']    = jslt['Token']
         if 'Validade' in jslt.keys():
@@ -250,6 +259,7 @@ class MostraPedido:
 
         if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
+            data["Error"]  = jslt["Result"]
             Log(ident, jslt["Result"])
             return json.dumps(data)
 
@@ -306,6 +316,7 @@ class EntregadorPedido:
 
         if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
+            date["Error"]  = jslt["Result"]
             Log(ident, jslt["Result"])
             return json.dumps(data)
 
@@ -368,6 +379,7 @@ class DescontoPedido:
 
         if  jslt['Result'] != 'OK':
             data["Result"] = "TOKEN NOT VALID"
+            data["Error"]  = jslt["Result"]
             Log(ident, jslt["Result"])
             return json.dumps(data)
 
@@ -402,7 +414,7 @@ class DescontoPedido:
             return json.dumps(data)
 
         # 2 ACRESCENTA O ENTREGADOR
-        if not pedido.desconto(Entregador, Pedido):
+        if not pedido.desconto(Desconto, Pedido):
             data["Result"] = 'PROBLEMA DESCONTO PEDIDO'
             data["Error"]  = pedido.Error
             Log(ident, data['Error'])

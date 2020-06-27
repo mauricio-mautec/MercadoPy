@@ -102,7 +102,6 @@ class PedidoDTO():
 
     def getArtigoDataList (self):
         return self.artigo.getDataList()
-
 #   
     def getItemEstoqueDataField (self, datum):
         return self.item_estoque.getDataField(datum)
@@ -231,18 +230,26 @@ class PedidoDTO():
         return True
 
     def desconto (self, desconto, pedido):
+        if not self.mostra(pedido):
+            return False 
+
         stmt = 'update pedido set desconto = %s, total = (valor - %s + entrega) where id = %s and concluido = FALSE returning ' + self.__columns()
         Dados = self.db.execute(stmt, (desconto, desconto, pedido))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
 
-        column = 0
-        for dtfield in self.__Data.keys():
-            self.__setData(dtfield, Dados['Data'][0][column])
-            column += 1
+        if Dados['Data'] != None:
+            column = 0
+            for dtfield in self.__Data.keys():
+                self.__setData(dtfield, Dados['Data'][0][column])
+                column += 1
+        else:
+            self.Error = f"DESCONTO NAO APLICADO AO PEDIDO [{pedido}]"
+            return False
 
         if not self.evento.novo("ACRESCENTADO DESCONTO", self.__Data['id']):
+            self.Error = f"DESCONTO NAO APLICADO AO PEDIDO [{pedido}]"
             return False
 
         return True
@@ -300,7 +307,7 @@ class PedidoDTO():
 
     def remove (self, pedido):
         if not self.evento.novo("PEDIDO REMOVIDO", pedido):
-            self.Error = self.evento.Error
+            self.Error = self.evento.Error + " MAS OQUE ISSO"
             return False
 
         stmt = 'insert into pedido_historico (pedido, data, evento) select pedido, data, evento from pedido_evento where pedido = %s'
@@ -309,13 +316,12 @@ class PedidoDTO():
             self.Error = Dados['Error']
             return False
 
-
         stmt = 'delete from pedido where id = %s'
         Dados = self.db.execute(stmt, (pedido,))
         if not Dados['Result']:
             self.Error = Dados['Error']
             return False
-        
+
         self.__resetData()
         self.__DataList = []
         return True
@@ -429,10 +435,14 @@ class PedidoDTO():
             self.Error = Dados['Error']
             return False
 
-        column = 0
-        for dtfield in self.__Data.keys():
-            self.__setData(dtfield, Dados['Data'][column])
-            column += 1
+        if Dados['Data'] != None:
+            column = 0
+            for dtfield in self.__Data.keys():
+                self.__setData(dtfield, Dados['Data'][column])
+                column += 1
+        else:
+            self.Error = "PEDIDO INEXISTENTE"
+            return False
 
         if not self.carregaItem():
             return False

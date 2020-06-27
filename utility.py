@@ -155,7 +155,6 @@ class TestAPI():
         self.channel.queue_declare    (queue = self.clientQueue)
         self.channel.queue_bind       (exchange = self.exchange, queue = self.clientQueue)
         self.channel.basic_consume(self.clientQueue, on_message_callback=callBackFunc, auto_ack=True, exclusive=True)
-        print(f'Queue: [{self.clientQueue}]')
         self.channel.start_consuming()
 
     def sendMessageToQueue (self, queue):    

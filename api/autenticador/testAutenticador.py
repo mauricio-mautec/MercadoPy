@@ -18,6 +18,8 @@ tC = TestAPI(api)
 def Log (message):
     sendLog (api, message)
 
+print("\n==========================================", "TESTE AUTENTICADOR")
+
 #'LOGIN/PASSWORD COM LOGIN INCORRETO'
 teste = '1 LOGIN/PASSWORD COM LOGIN INCORRETO'
 Appid   = {"Name" : "hudflutter", "Version" : "text da versao", "Appsys": "win64, android, iphone" }
@@ -86,17 +88,19 @@ else:
 # ANTES DE ATIVAR - ALTERAR MAXAGE
 # PARA UM VALOR MENOR QUE 20 SEGUNDOS
 import time
-maxage = int(konstantes('TOKEN', 'maxage'))
-teste  = f"5 ENVIO TOKEN EXPIRADO {maxage}s"
+maxage   = int(konstantes('TOKEN', 'maxage'))
+maxagedb = int(konstantes('TOKEN', 'maxagedb'))
+teste    = f"5 ENVIO TOKEN EXPIRADO {maxage}s"
 Log(teste)
 if maxage < 20:
-    time.sleep(maxage + 20)
+    time.sleep(maxagedb)
 Api               = {"Name": "autenticador.TokenValidate"}
 tC.Message["Api"] =  Api
 tC.sendMessageToQueue(queue);
 tC.startConsuming(tC.getMessage)
-if tC.Result['Result'] != 'EMITIR NOVA AUTORIZACAO':
+if tC.Result['Result'] != 'REQUEST NEW AUTHORIZATION':
     print (f"FALHA TESTE {teste}")
+    pprint.pprint(tC.Result)
     sys.exit(0)
 else:
     print(f"TESTE {teste}: OK")
