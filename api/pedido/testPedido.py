@@ -12,32 +12,36 @@ from utility import *
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
+queue = konstantes('PIKA', 'queue')
+
 def Log (message):
     sendLog ('pedido.testPedido', message)
 
 print("\n==========================================", "TESTE PEDIDO")
 N = 0
 
-queue = konstantes('PIKA', 'queue')
 # ENVIO DO LOGIN/PASSWORD E RECOLHA DO TOKEN PARA FUTUROS ACESSOS E CONFIGURACAO CANAL RSP
+teste   = "AUTENTICACAO E RECEBIMENTO DO TOKEN"
 Appid   = {"Name" : "Python cmd line", "Version" : "3.6", "Appsys": "Arm Raspbian" }
 Param   = {"Login": "sergio.moreira@gmail.com","Password": "veiM4biu","Sistema" : 2, "Appid": Appid }
 Api     = {"Name": "autenticador.Token", "Param": Param}
 testAPI = TestAPI('pedido.testPedido') 
 testAPI.Message["Api"] =  Api
-Log("MENSAGEM DE LOGIN PARA FORNECIMENTO TOKEN COMUNICACAO")
+Log(teste)
 testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
 if 'Token' in testAPI.Result.keys():
     testAPI.setAuthorizationWith(testAPI.Result['Token'], testAPI.Result['Validade'])
-    print("AUTENTICACAO E RECEBIMENTO DO TOKEN: OK")
+    N += 1
+    print(f"TESTE {N} {teste}: OK")
 else:
-    Log("TOKEN NAO RECEBIDO")
-    print("TOKEN NAO RECEBIDO")
+    print(f"FALHA TESTE {teste}")
+    pp.pprint(Param, '\n')
+    pp.pprint(testAPI.Result['Result'])
     sys.exit(0)
 
 # CRIACAO PEDIDO PROB PARAMETROS 1
-teste = "CRIACAO PEDIDO PROB PARAMETROS 1"
+teste   = "CRIACAO PEDIDO PROB PARAMETROS 1"
 Param   = {"ClienSte": 1}
 Api     = {"Name": "pedido.NovoPedido", "Param": Param}
 testAPI.Message["Api"] =  Api
@@ -46,6 +50,8 @@ testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
 if testAPI.Result['Result'] != "ERROR PARAM NOT FOUND":
     print(f"FALHA TESTE {teste}")
+    pp.pprint(Param, '\n')
+    pp.pprint(testAPI.Result['Result'])
     sys.exit(0)
 else:
     N += 1
@@ -61,6 +67,8 @@ testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
 if testAPI.Result['Result'] != "ERROR PARAM QUALITY":
     print(f"FALHA TESTE {teste}")
+    pp.pprint(Param, '\n')
+    pp.pprint(testAPI.Result['Result'])
     sys.exit(0)
 else:
     N += 1
@@ -77,6 +85,8 @@ testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
 if testAPI.Result['Result'] != "ERROR PARAM VALUE":
     print(f"FALHA TESTE {teste}")
+    pp.pprint(Param, '\n')
+    pp.pprint(testAPI.Result['Result'])
     sys.exit(0)
 else:
     N += 1
@@ -93,8 +103,8 @@ testAPI.sendMessageToQueue(queue);
 testAPI.startConsuming(testAPI.getMessage)
 if testAPI.Result['Result'] != "PROBLEMA NOVO PEDIDO":
     print(f"FALHA TESTE {teste}")
-    pp.pprint(Param)
-    print(testAPI.Result)
+    pp.pprint(Param, '\n')
+    pp.pprint(testAPI.Result['Result'])
     sys.exit(0)
 else:
     N += 1
@@ -136,6 +146,7 @@ else:
     N += 1
     print(f"TESTE {N} {teste}: OK")
     
+
 
 # CRIACAO NOVO PEDIDO
 teste   = "CRIACAO NOVO PEDIDO"
@@ -238,6 +249,7 @@ else:
     print(f"TESTE {N} {teste}: OK")
     Log(testAPI.Result)
 
+
 # INSERIR UM ITEM COMPOSTO (VENDA PRODUTO) PRESENTE NO ESTOQUE_VENDA
 teste   =  "INSERIR UM ITEM COMPOSTO (VENDA PRODUTO) PRESENTE NO ESTOQUE_VENDA"
 Param   = {"Pedido" : Pedido, "Artigo": 62, "Quantidade": 1}
@@ -255,6 +267,7 @@ else:
     N += 1
     print(f"TESTE {N} {teste}: OK")
     Log(testAPI.Result)
+
 
 # INSERIR UM DESCONTO NEGATIVO NO PEDIDO
 teste   =  "INSERIR UM DESCONTO NEGATIVO NO PEDIDO"
@@ -348,8 +361,9 @@ else:
     print(f"TESTE {N} {teste}: OK")
     Log(testAPI.Result)
 
-# INSERIR UM DESCONTO PARA UM PEDIDO EXISTENTE
-teste   =  f"INSERIR UM DESCONTO PEDIDO {Pedido}"
+
+# INSERIR DESCONTO PEDIDO
+teste   =  f"INSERIR DESCONTO PEDIDO {Pedido}"
 Param   = {"Pedido": Pedido, "Desconto": "0.50"}
 Api     = {"Name": "pedido.DescontoPedido", "Param": Param}
 testAPI.Message["Api"] =  Api
@@ -366,7 +380,7 @@ else:
     print(f"TESTE {N} {teste}: OK")
     Log(testAPI.Result)
 
-# INSERIR ENTREGA PARA UM PEDIDO EXISTENTE
+# INSERIR ENTREGA PEDIDO
 teste   =  f"INSERIR ENTREGA PEDIDO {Pedido}"
 Param   = {"Pedido": Pedido, "Entrega": "2.70"}
 Api     = {"Name": "pedido.ValorEntrega", "Param": Param}
@@ -420,8 +434,6 @@ else:
     print(f"TESTE {N} {teste}: OK")
     Log(testAPI.Result)
 
-
-
 # APRESENTA PEDIDO
 teste   =  f"APRESENTA PEDIDO {Pedido}"
 Param   = {"Pedido": Pedido}
@@ -444,6 +456,24 @@ else:
 teste   =  "LISTA PEDIDOS EM ABERTO"
 Param   = {}
 Api     = {"Name": "pedido.ApresentaPedidos", "Param": Param}
+testAPI.Message["Api"] =  Api
+Log(teste)
+testAPI.sendMessageToQueue(queue);
+testAPI.startConsuming(testAPI.getMessage)
+if   testAPI.Result['Result'] != "OK":
+    print(f"FALHA TESTE {teste}")
+    pp.pprint(Param)
+    pp.pprint(testAPI.Result)
+    sys.exit(0)
+else:
+    N += 1
+    print(f"TESTE {N} {teste}: OK")
+    Log(testAPI.Result)
+
+# ACEITA PEDIDO E COLOCA EM PRODUCAO
+teste   =  "ACEITA PEDIDO E COLOCA EM PRODUCAO"
+Param   = {"Pedido": Pedido}
+Api     = {"Name": "pedido.AceitaPedido", "Param": Param}
 testAPI.Message["Api"] =  Api
 Log(teste)
 testAPI.sendMessageToQueue(queue);

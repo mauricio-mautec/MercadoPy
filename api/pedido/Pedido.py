@@ -45,19 +45,19 @@ class NovoPedido:
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         Loja      = jslt['Loja']
-        
+
         if 'Cliente' not in paramKeys:
             data["Result"] = "ERROR PARAM NOT FOUND"
             Log(ident, data['Result'])
             return json.dumps(data)
 
-        try: 
+        try:
             Cliente = int(self.Param['Cliente'])
         except:
             data["Result"] = "ERROR PARAM QUALITY"
             Log(ident, data['Result'])
             return json.dumps(data)
-            
+
         if Cliente <= 0:
             data["Result"] = "ERROR PARAM VALUE"
             Log(ident, data['Result'])
@@ -70,7 +70,7 @@ class NovoPedido:
             data["Error"]  = pedido.Error
             Log(ident, data['Error'])
             return json.dumps(data)
-       
+
         pedido = pedido.getDataField('id')
         data["Pedido"] = pedido
         data["Result"] = "OK"
@@ -102,7 +102,7 @@ class RemovePedido:
             data['Token']    = jslt['Token']
         if 'Validade' in jslt.keys():
             data['Validade'] = jslt['Validade']
-            
+
         # VERIFICACAO PARAMETROS
         paramKeys = self.Param.keys()
         if 'Pedido' not in paramKeys:
@@ -116,7 +116,7 @@ class RemovePedido:
             data["Result"] = "ERROR PARAM QUALITY"
             Log(ident, data['Result'])
             return json.dumps(data)
-            
+
         if Pedido <= 0:
             data["Result"] = "ERROR PARAM VALUE"
             Log(ident, data['Result'])
@@ -128,7 +128,7 @@ class RemovePedido:
             data["Error"]  = pedido.Error
             Log(ident, data['Error'])
             return json.dumps(data)
-       
+
         data["Result"] = "OK"
 
         return json.dumps(data)
@@ -602,13 +602,13 @@ class AceitaPedido:
         # AUTORIZATION
         data = {}
         data["Api"] = ident
-        validate = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
-        rslt     = validate.Execute()
-        jslt     = json.loads(rslt)
+        validate    = TokenValidate(self.Param)    # UPDATE LAST CHECK TIME OF THE TOKEN
+        rslt        = validate.Execute()
+        jslt        = json.loads(rslt)
 
         if  jslt['Result'] != 'OK':
-            data["Result"] = "TOKEN NOT VALID"
-            data["Error"]  = jslt["Result"]
+            data["Result"]  = "TOKEN NOT VALID"
+            data["Error"]   = jslt["Result"]
             Log(ident, jslt["Result"])
             return json.dumps(data)
 
@@ -631,9 +631,16 @@ class AceitaPedido:
             Log(ident, data['Result'])
             return json.dumps(data)
             
-        if Entrega <= 0.00 or Pedido <= 0:
+        if Pedido <= 0:
             data["Result"] = "ERROR PARAM VALUE"
             Log(ident, data['Result'])
             return json.dumps(data)
 
         # 2 ACEITA O PEDIDO
+        if not pedido.aceitaPedido(Pedido):
+            data['Result'] = "PROBLEMA ACEITE PEDIDO"
+            data['Error']  = pedido.Error
+            return json.dumps(data)
+        
+        data['Result'] = 'OK'
+        return json.dumps(data)

@@ -13,7 +13,6 @@ from api.produto.ProdutoDTO       import ProdutoDTO
 
 class PedidoDTO():
 # METODOS COMUNS
-
     def __init__(self):
         self.__resetData()
         self.__DataList = []
@@ -39,6 +38,7 @@ class PedidoDTO():
             'Total'              : 0.00,
             'Entregador'         : 0,
             'Concluido'          : False,
+            'Situacao'           : '',
             'Observacao_Entrega' : '' }
 
     def __columns (self):
@@ -193,7 +193,6 @@ class PedidoDTO():
         if not self.evento.novo("PEDIDO CONCLUIDO", self.__Data['id']):
             self.Error = self.evento.Error
             return False
-
         return True
 
     def atualizaValor (self):
@@ -295,6 +294,9 @@ class PedidoDTO():
         return True
     
     def observacaoEntrega (self, observacao, pedido):
+        if not self.mostra(pedido):
+            return false
+
         stmt = 'update pedido set observacao_entrega = %s where id = %s and concluido = FALSE returning ' + self.__columns()
         Dados = self.db.execute(stmt, (observacao, pedido))
         if not Dados['Result']:
@@ -313,10 +315,57 @@ class PedidoDTO():
         return True
 
     def aceitaPedido (self, pedido):
-        # CONSULTAR EM PEDIDO_ITEM_ESTOQUE A DISPONIBILIDADE
-        # ATUALIZAR ESTOQUE VENDA RETIRANDO CADA ARTIGO
-        # FECHAR O PEDIDO
+        if not self.mostra(pedido):
+            return False
+
+        # RELACIONAR ARTIGOS E QUANTIDADES NECESSARIAS PARA ACEITE DO PEDIDO
+        stmt  = "select pie.artigo, pie.quantidade from pedido_item pi inner join pedido_item_estoque pie on (pie.pedido_item = pi.id) where pi.pedido = %s"
+        Dados = self.db.queryAll(stmt, (pedido,))
+        if not Dados['Result']:
+            self.Error = Dados['Error']
+            return False
+        Artigos = Dados['Data']
+
+        # ATUALIZAR ESTOQUE VENDA RETIRANDO A QUANTIDADE NECESSARIA DE CADA ARTIGO
+        Loja  = self.getDataField('Loja')
+        Dados = self.db.executeManyStart()
+        if not Dados['Result']:
+            self.Error = Dados['Error']
+            return False
+
+        for item in Artigos:
+            artigo, quantidade = item
+            disponivel, idEstoqueVenda, qtdEstoque = self.artigo.disponivelEstoque(Loja, artigo)
+            if not disponivel or qtdEstoque < quantidade:
+                self.Error = f"ARTIGO {artigo}/{quantidade}:{qtdEstoque} INDISPONIVEL OU INSUFICIENTE"
+                return False
+            
+            stmt = "update estoque_venda set disponivel = disponivel - %s where id = %s"
+            Dados = self.db.executeMany(stmt, (quantidade, idEstoqueVenda))
+            if not Dados['Result']:
+                self.Error = Dados['Error']
+                return False
+
+        Dados = self.db.executeManyCommit()
+        if not Dados['Result']:
+            self.Error = Dados['Error']
+            return False
+
+        # SINALIZAR O ACEITE DO PEDIDO
+        if not self.evento.novo("PEDIDO ACEITO", self.__Data['id']):
+            self.Error = self.evento.Error
+            return False
+
         # ENVIAR PARA PRODUCAO
+        stmt  = "update pedido set situacao ='FABRICA' where id = %s"
+        Dados = self.db.execute(stmt, (pedido,))
+        if not Dados['Result']:
+            self.Error = Dados['Error']
+            return False
+        if not self.evento.novo("FILA DE PRODUCAO", self.__Data['id']):
+            self.Error = self.evento.Error
+            return False
+
         return True
        
 # CREATE DESTROY METHODS
@@ -376,7 +425,7 @@ class PedidoDTO():
             return False
 
         if funcao == 'VENDA':
-            disponivel, qtd = self.artigo.disponivelEstoque(Loja, Artigo)
+            disponivel, estoque, qtd = self.artigo.disponivelEstoque(Loja, Artigo)
 
             if not disponivel:
                 self.Error = f"ARTIGO {Artigo} INDISPONIVEL"
@@ -419,7 +468,7 @@ class PedidoDTO():
             produtoArtigos = produto.getProdutoArtigoDataList()
 
             for produtoArtigo in produtoArtigos:
-                disponivel, qtd = self.artigo.disponivelEstoque(Loja, produtoArtigo['Artigo'])
+                disponivel, estoque, qtd = self.artigo.disponivelEstoque(Loja, produtoArtigo['Artigo'])
                 if not disponivel or qtd < produtoArtigo['Quantidade']:
                     self.Error = f"ESTOQUE VENDA SEM ARTIGO [{produtoArtigo['Artigo']}]"
                     self.item.remove (Pedido, pedidoItem)

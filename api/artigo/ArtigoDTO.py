@@ -160,16 +160,19 @@ class ArtigoDTO():
 
     def disponivelEstoque(self, loja, artigo):
         hoje = datetime.date.today().isoformat()
-        stmt = f"select sum(disponivel) from estoque_venda where loja = {loja} and artigo = {artigo} and validade >= '{hoje}' and disponivel > 0"
+        stmt = f"select id, disponivel from estoque_venda where loja = {loja} and artigo = {artigo} and validade >= '{hoje}' and disponivel > 0"
         Dados = self.db.queryAll(stmt, None)
 
         if not Dados['Result']:
             self.Error = Dados['Error']
             return (False, 0)
-
-        qtd = Dados['Data'][0][0]
-        if qtd == None: qtd = 0
-        
-        result = (True, qtd)
+       
+        if len(Dados['Data']) > 0:
+            id, qtd = Dados['Data'][0]
+        else:
+            id  = 0
+            qtd = 0
+                
+        result = (True, id, qtd)
 
         return result

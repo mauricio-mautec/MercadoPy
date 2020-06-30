@@ -7,25 +7,33 @@ from   utility import konstantes
 class AccessDB():
     # DADOS REPRESENTADOS
     def __init__(self):
-        self.database = konstantes('POSTGRES', 'database')
+        self.database  = konstantes('POSTGRES', 'database')
         psycopg2.extras.register_uuid()
         self.Dados = {}
-    def queryOne(self, stmt, data):
-        Dados = {}
         try:
-            conn = psycopg2.connect (self.database)
+            self.conn = psycopg2.connect (self.database)
+            self.connected = True 
+
+        except (Exception, psycopg2.Error) as error:
+            self.Dados['Error']  = error
+            self.Dados['Result'] = False
+            raise Exception(error)
+        
+        self.conn.close()
+
+    def queryOne(self, stmt, data):
+        try:
+            conn = psycopg2.connect (self.database) 
             curs = conn.cursor()
             if data == None:
                 curs.execute(stmt)
             else:
                 curs.execute (stmt, data)
-            Data = curs.fetchone()
-            self.Dados['Data'] = Data
+            self.Dados['Data'] = curs.fetchone()
             conn.commit()
             Result = True
 
         except psycopg2.Error as error:
-            conn.rollback()
             self.Dados['Error'] = error.pgerror
             Result = False
 
@@ -42,13 +50,12 @@ class AccessDB():
                 curs.execute(stmt)
             else:
                 curs.execute (stmt, data)
-            Data = curs.fetchall()
-            self.Dados['Data'] = Data
+            data = curs.fetchall()
+            self.Dados['Data'] = data
             conn.commit()
-            Result = True;
+            Result = True
         
         except psycopg2.Error as error:
-            conn.rollback()
             self.Dados['Error'] = error.pgerror
             Result = False
         
@@ -67,19 +74,60 @@ class AccessDB():
 
             hasData = curs.description != None
             if hasData and (curs.rowcount > 0):
-                Data = curs.fetchall()
-                self.Dados['Data'] = Data
+                self.Dados['Data'] = curs.fetchall()
             else:
                 self.Dados['Data'] = None
 
             conn.commit()
-            Result = True;
+            Result = True
         
         except psycopg2.Error as error:
-            conn.rollback()
             self.Dados['Error'] = error.pgerror
             Result = False
         
         conn.close()
         self.Dados['Result'] = Result
+        return self.Dados
+    
+    def executeManyStart(self):
+        try:
+            self.conn = psycopg2.connect (self.database)
+            self.curs = self.conn.cursor()
+            self.Dados['Result'] = True
+        
+        except psycopg2.Error as error:
+            self.Dados['Error']  = error.pgerror
+            self.Dados['Result'] = False
+        
+        return self.Dados
+    
+    def executeManyCommit(self):
+        try:
+            self.conn.commit()
+            self.conn.close()
+            self.Dados['Result'] = True
+
+        except psycopg2.Error as error:
+            self.Dados['Error']  = error.pgerror
+            self.Dados['Result'] = False
+        
+        return self.Dados
+    
+    def executeMany(self, stmt, data):
+        try:
+            if data == None:
+                self.curs.execute(stmt)
+            else:
+                self.curs.execute (stmt, data)
+            hasData = self.curs.description != None
+            if hasData and (self.curs.rowcount > 0):
+                self.Dados['Data'] = self.curs.fetchall()
+            else:
+                self.Dados['Data'] = None
+            self.Dados['Result'] = True
+
+        except psycopg2.Error as error:
+            self.Dados['Error']  = error.pgerror
+            self.Dados['Result'] = False
+    
         return self.Dados

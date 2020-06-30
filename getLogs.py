@@ -10,12 +10,12 @@ def callback(ch, method, properties, body):
 #    pprint.pprint(rsldata)
 #    print('----------------------------------------------------------------------\n')
     database = konstantes('LOGDB', 'database')
-    con      = sqlite3.connect (database)        
+    con      = sqlite3.connect (database)
     cur      = con.cursor()
     stmt     = 'insert into servicelog(log) values (?)'
     cur.execute (stmt, (result,))
     con.commit()
-        
+
 def handleSIGCHLD(param1, param2):
     os.waitpid(-1, os.WNOHANG)
 
