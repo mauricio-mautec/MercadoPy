@@ -1,0 +1,248 @@
+  [
+   {
+      "nome": "XIS JÚNIOR",
+      "valor": 11.0,
+      "grupo": "LANCHESKIDS" 
+    },
+    {
+        "nome": "GALLINERO",
+        "valor": 11.0,
+        "grupo": "LANCHESKIDS" 
+    },
+    {
+        "nome": "PETISCOS ESPECIAIS DE BATATA",
+        "valor": 23.0,
+        "grupo": "PETISCOS"
+    },
+    {
+        "nome": "PROMOÇÃO XIS COSTELA + BATATA",
+        "valor": 30.9,
+        "grupo": "PROMOÇÕES"
+    },
+    {
+        "nome": "PROMOÇÃO O TREM É BAUM!!!",
+        "valor": 43.00,
+        "grupo": "PROMOÇÕES"
+    },
+    {
+        "nome": "COMBINADO QUARENTENA + SANDUBA",
+        "valor": 44.9,
+        "grupo": "PROMOÇÕES"
+    },
+    {
+        "nome": "COMBINADO QUEM CANTA É O GALO!!!",
+        "valor": 51.9,
+        "grupo": "PROMOÇÕES"
+    },
+    {
+        "nome": "COMBINADO 02 GULAS + REFRI 600ML",
+        "valor": 38.9,
+        "grupo": "PROMOÇÕES"
+    },
+    {
+        "nome": "COMBINADO 02 DO PAPAI + REFRI 600ML",
+        "valor": 36.9,
+        "grupo": "PROMOÇÕES"
+    },
+    {
+        "nome": "COMBINADO 02 TRIVIAL + REFRI 600ML",
+        "valor": 34.9,
+        "grupo": "PROMOÇÕES"
+    },
+    {
+        "nome": "LA FRAGATA",
+        "valor": 59.9,
+        "grupo": "PROMOÇÕES"
+    },
+    {
+        "nome": "LA BARCA",
+        "valor": 57.9,
+        "grupo": "PROMOÇÕES"
+    },
+    {
+        "nome": "TRIVIAL",
+        "valor": 15.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "DO PAPAI",
+        "valor": 16.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "GULAS",
+        "valor": 17.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "TREM BÃO!",
+        "valor": 18.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "CROCANTE BACON",
+        "valor": 18.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "CROCANTE BACON TURBO",
+        "valor": 24.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "GALO GORDO",
+        "valor": 21.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "LEITÃO AO BACON",
+        "valor": 21.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "DU FROMAGE",
+        "valor": 25.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "XIS COSTELA",
+        "valor": 23.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "BIG BURGUER",
+        "valor": 24.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "XIS CHEDDAR",
+        "valor": 24.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "XIS FILÉ",
+        "valor": 25.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "XIS PICANHA",
+        "valor": 29.9,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "XIS MUITA FOME",
+        "valor": 33.0,
+        "grupo": "SANDUICHES"
+    },
+    {
+        "nome": "MORANGO FRUTAS",
+        "valor": 6.0,
+        "grupo": "SUCOS" 
+    },
+    {
+        "nome": "ABACAXI COM HORTELÃ",
+        "valor": 6.0,
+        "grupo": "SUCOS" 
+    },
+    {
+        "nome": "SUCO NATURAL DE LARANJA 440ML",
+        "valor": 5.0,
+        "grupo": "SUCOS" 
+    },
+    {
+        "nome": "ACEROLA (POLPA CONCENTRADO)",
+        "valor": 6.0,
+        "grupo": "SUCOS" 
+    },
+    {
+        "nome": "MARACUJÁ (POLPA CONCENTRADO)",
+        "valor": 6.0,
+        "grupo": "SUCOS"
+    },
+    {
+        "nome": "CUPUAÇU (POLPA CONCENTRADO)",
+        "valor": 9.9,
+        "grupo": "CREMES"
+    },
+    {
+        "nome": "MARACUJÁ (POLPA CONCENTRADO)",
+        "valor": 9.9,
+        "grupo": "CREMES"
+    },
+    {
+        "nome": "MORANGO FRUTA (CONCENTRADO)",
+        "valor": 9.9,
+        "grupo": "CREMES"
+    },
+    {
+        "nome": "COCA-COLA 600ML",
+        "valor": 6.0,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "COCA-COLA 1L",
+        "valor": 7.0,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "COCA-COLA LATA 350ML",
+        "valor": 4.5,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "COCA-COLA 600 ML",
+        "valor": 6.0,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "COCA-COLA 2L",
+        "valor": 9.0,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "SODA LIMONADA 350ML",
+        "valor": 4.5,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "SODA LIMONADA 600ML",
+        "valor": 6.0,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "SODA LIMONADA 2L",
+        "valor": 9.0,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "FANTA LARANJA LATA 350ML",
+        "valor": 4.5,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "FANTA LARANJA 600ML",
+        "valor": 6.0,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "FANTA LARANJA 2L",
+        "valor": 9.0,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "GUARANÁ ANTÁRTICA 350ML",
+        "valor": 4.5,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "GUARANÁ ANTÁRTICA 600ML",
+        "valor": 5.5,
+        "grupo": "REFRIGERANTES"
+    },
+    {
+        "nome": "GUARANÁ ANTÁRTICA 1,5L",
+        "valor": 7.5,
+        "grupo": "REFRIGERANTES"
+    }
+
+  ]

@@ -1,0 +1,102 @@
+[
+    {
+        "nome": "MAIONESE DE ERVAS GOURMET",
+        "valor": 2.0,
+        "grupo": "MAIONESES"
+    },
+    {
+        "nome": "MAIONESE PICANTE GOURMET",
+        "valor": 2.0,
+        "grupo": "MAIONESES"
+    },
+    {
+        "nome": "ANÉIS DE CEBOLA EMPANADOS",
+        "valor": 8.0,
+        "grupo": "PETISCOS"
+    },
+    {
+        "nome": "BATATA CRINKLE FRITA 200G",
+        "valor": 7.0,
+        "grupo": "PETISCOS"
+    },
+    {
+        "nome": "BACON",
+        "valor": 4.0,
+        "grupo": "ADDSANDUICHE"
+    },
+    {
+        "nome": "CREAM CHEESE",
+        "valor": 2.5,
+        "grupo": "ADDSANDUICHE"
+    },
+    {
+        "nome": "HAMBURGER 140G",
+        "valor": 6.0,
+        "grupo": "ADDSANDUICHE"
+    },
+    {
+        "nome": "HAMBURGER COSTELA 180G",
+        "valor": 9.0,
+        "grupo": "ADDSANDUICHE"
+    },
+    {
+        "nome": "HAMBURGUER PICANHA 200G",
+        "valor": 12.0,
+        "grupo": "ADDSANDUICHE"
+    },
+    {
+        "nome": "HAMBURGUER FRANGO 160G",
+        "valor": 6.0,
+        "grupo": "ADDSANDUICHE"
+    },
+    {
+        "nome": "OVO JUMBÃO (02 GEMAS)",
+        "valor": 1.7,
+        "grupo": "ADDSANDUICHE"
+    },
+    {
+        "nome": "SALSICHA (SADIA/SEARA/RESENDE)",
+        "valor": 2.5,
+        "grupo": "ADDSANDUICHE"
+    },
+    {
+        "nome": "QUEIJO MUÇARELA",
+        "valor": 2.0,
+        "grupo": "ADDSANDUICHE"
+    },
+    {
+        "nome": "QUEIJO CHEDDAR",
+        "valor": 2.5,
+        "grupo": "ADDSANDUICHE"
+    },
+    {
+        "nome": "MOLHO BARBECUE",
+        "valor": 2.0,
+        "grupo": "MOLHOS"
+    },
+    {
+        "nome": "GELEIA DE PIMENTA",
+        "valor": 2.0,
+        "grupo": "MOLHOS"
+    },
+    {
+        "nome": "KETCHUP",
+        "valor": 1.0,
+        "grupo": "MOLHOS"
+    },
+    {
+        "nome": "COMBO SUCO LARANJA 400ML + BATATA 200G",
+        "valor": 9.0,
+        "grupo": "COMBO"
+    },
+    {
+        "nome": "COMBO REFRI LATA + BATATA 200G",
+        "valor": 9.0,
+        "grupo": "COMBO"
+    },
+	{
+	    "nome": "SACHÊ STÉVIA 30G",
+        "valor": 0.50,
+        "grupo": "RESTRICAOALIMENTAR"	
+	}
+]

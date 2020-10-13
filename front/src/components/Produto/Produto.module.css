@@ -1,0 +1,75 @@
+.Produto {
+    width: auto;
+    padding: 6px;
+    text-align: center;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 3px #ccc;
+    margin: 2px;
+    box-sizing: border-box;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.GRUPO {
+    text-decoration: underline;
+    font-weight: 900;
+}
+.REFRIGERANTES {
+    color: white;
+    background-color: rgb(9, 84, 245);
+}
+.MAIONESES {
+    color: white;
+    background-color: rgb(9, 84, 245);
+}
+.PROMOÇÕES {
+    color: white;
+    background-color: rgb(245, 123, 9);  
+}
+.COMBO {
+    color: white;
+    background-color: rgb(245, 123, 9);  
+}
+.SANDUICHES {
+    color: white;
+    background-color: rgb(245, 76, 9);  
+}
+.ADDSANDUICHE {
+    color: white;
+    background-color: rgb(245, 76, 9);  
+}
+.CREMES {
+    color: rgb(237, 240, 243);
+    background-color: rgb(12, 120, 124);  
+}
+.MOLHOS {
+    color: rgb(237, 240, 243);
+    background-color: rgb(12, 120, 124);  
+}
+
+.SUCOS {
+    color: rgb(255, 255, 255);
+    background-color: rgb(55, 172, 123);  
+}
+
+.LANCHESKIDS {
+    color: white;
+    background-color: rgb(245, 96, 9);   
+}
+
+.PETISCOS {
+    cursor: pointer;
+    color: black;
+    background-color: rgb(250, 170, 117);   
+}
+
+.RESTRICAOALIMENTAR {
+    cursor: pointer;
+    color: black;
+    background-color: rgb(66, 211, 90);   
+}
+
+.Produto:hover,
+.Produto:active {
+    background-color: #d88e18;
+}
