@@ -1,5 +1,5 @@
 import sys, os
-sys.path.append('/srv/mautec/www/MercadoPy')
+sys.path.append('/root/dockerCtrl/MercadoPy')
 import time
 import random
 from   pathlib import Path
@@ -22,7 +22,7 @@ N = 0
 
 # ENVIO DO LOGIN/PASSWORD E RECOLHA DO TOKEN PARA FUTUROS ACESSOS E CONFIGURACAO CANAL RSP
 teste   = "AUTENTICACAO E RECEBIMENTO DO TOKEN"
-Appid   = {"Name" : "Python cmd line", "Version" : "3.6", "Appsys": "Arm Raspbian" }
+Appid   = {"Name" : "testPython", "Version" : "1.0", "Appsys": "python3 linux" }
 Param   = {"Login": "sergio.moreira@gmail.com","Password": "veiM4biu","Sistema" : 2, "Appid": Appid }
 Api     = {"Name": "autenticador.Token", "Param": Param}
 testAPI = TestAPI('pedido.testPedido') 

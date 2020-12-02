@@ -1,5 +1,5 @@
 import sys, os
-sys.path.append('/srv/mautec/www/MercadoPy')
+sys.path.append('/root/dockerCtrl/MercadoPy')
 import time
 import random
 from   pathlib import Path
@@ -24,7 +24,7 @@ N = 0
 
 #'LOGIN/PASSWORD COM LOGIN INCORRETO'
 teste = 'LOGIN/PASSWORD COM LOGIN INCORRETO'
-Appid   = {"Name" : "hudflutter", "Version" : "text da versao", "Appsys": "win64, android, iphone" }
+Appid   = {"Name" : "testPython", "Version" : "1.0", "Appsys": "python3 linux" }
 Param   = {"Login": "sergxio.moreira@gmail.com","Password": "veiM4biu","Sistema" : 2, "Appid": Appid }
 Api     = {"Name": "autenticador.Token", "Param": Param}
 testAPI.Message["Api"] =  Api
@@ -42,7 +42,6 @@ else:
 
 #'LOGIN/PASSWORD COM PASSWORD INCORRETO'
 teste = 'LOGIN/PASSWORD COM PASSWORD INCORRETO'
-Appid   = {"Name" : "hudflutter", "Version" : "text da versao", "Appsys": "win64, android, iphone" }
 Param   = {"Login": "sergio.moreira@gmail.com","Password": "VeiM4biu","Sistema" : 2, "Appid": Appid }
 Api     = {"Name": "autenticador.Token", "Param": Param}
 testAPI.Message["Api"] =  Api
@@ -59,7 +58,6 @@ else:
     print(f"TESTE {N} {teste} OK")
 
 teste = 'LOGIN/PASSWORD RECEBE TOKEN AUTORIZADO'
-Appid   = {"Name" : "hudflutter", "Version" : "text da versao", "Appsys": "win64, android, iphone" }
 Param   = {"Login": "sergio.moreira@gmail.com","Password": "veiM4biu","Sistema" : 2, "Appid": Appid }
 Api     = {"Name": "autenticador.Token", "Param": Param}
 testAPI.Message["Api"] =  Api

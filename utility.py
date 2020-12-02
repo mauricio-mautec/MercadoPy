@@ -10,7 +10,7 @@ import json
 import uuid
 
 def konstantes(name,key):
-    arqini     = "/srv/mautec/www/MercadoPy/config.ini"
+    arqini     = "./config.ini"
     config     = configparser.ConfigParser()
     config.read (arqini)
     if name in config:
